@@ -1,0 +1,19 @@
+# Rails
+backend/config/*.key
+backend/log/*
+backend/tmp/*
+backend/storage/*
+!backend/log/.keep
+!backend/tmp/.keep
+!backend/storage/.keep
+backend/.bundle
+backend/vendor/bundle
+
+# Node
+frontend/node_modules
+frontend/dist
+
+# 環境変数・OS
+.env
+.env.*
+.DS_Store
