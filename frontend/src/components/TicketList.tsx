@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { STATUS_LABELS, type Ticket } from '../api/tickets'
 
 type Props = {
@@ -14,7 +15,9 @@ export function TicketList({ tickets }: Props) {
       {tickets.map((ticket) => (
         <li key={ticket.id}>
           <span className={`status status-${ticket.status}`}>{STATUS_LABELS[ticket.status]}</span>
-          <span className="title">{ticket.title}</span>
+          <Link className="title" to={`/tickets/${ticket.id}`}>
+            {ticket.title}
+          </Link>
         </li>
       ))}
     </ul>

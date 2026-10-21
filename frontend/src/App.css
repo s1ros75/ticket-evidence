@@ -103,3 +103,55 @@ section + section {
 .status-done {
   background: rgba(34, 197, 94, 0.15);
 }
+
+.ticket-list a.title {
+  color: var(--text-h);
+}
+
+.description {
+  white-space: pre-wrap;
+}
+
+.items {
+  margin-top: 24px;
+  padding: 4px 16px 12px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 6px;
+}
+
+.items-unknown {
+  border-left-color: #dc2626;
+}
+
+.items-assumption {
+  border-left-color: #eab308;
+}
+
+.items-confirmed {
+  border-left-color: #22c55e;
+}
+
+.items ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.items li {
+  white-space: pre-wrap;
+}
+
+.items .empty {
+  margin: 0;
+  opacity: 0.7;
+}
+
+.ticket-form select {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  align-self: flex-start;
+}
