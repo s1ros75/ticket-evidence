@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_145704) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_151622) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "evidences", force: :cascade do |t|
+    t.bigint "ticket_item_id", null: false
+    t.string "url"
+    t.text "memo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticket_item_id"], name: "index_evidences_on_ticket_item_id"
+  end
 
   create_table "ticket_items", force: :cascade do |t|
     t.bigint "ticket_id", null: false
@@ -34,5 +43,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_145704) do
     t.index ["status"], name: "index_tickets_on_status"
   end
 
+  add_foreign_key "evidences", "ticket_items"
   add_foreign_key "ticket_items", "tickets"
 end
