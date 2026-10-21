@@ -9,9 +9,9 @@ module Api
       end
 
       def show
-        ticket = Ticket.find(params[:id])
+        ticket = Ticket.includes(items: :evidences).find(params[:id])
 
-        render json: ticket.as_json(include: :items)
+        render json: ticket.as_json(include: { items: { include: :evidences } })
       end
 
       def create

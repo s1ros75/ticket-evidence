@@ -11,7 +11,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :tickets, only: [:index, :show, :create] do
-        resources :items, only: [:create], module: :tickets
+        resources :items, only: [:create], module: :tickets do
+          post :resolve, on: :member
+        end
       end
     end
   end
