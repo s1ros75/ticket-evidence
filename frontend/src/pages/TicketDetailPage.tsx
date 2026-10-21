@@ -10,6 +10,7 @@ import {
   type TicketItem,
 } from '../api/tickets'
 import { TicketItemForm } from '../components/TicketItemForm'
+import { TicketItemView } from '../components/TicketItemView'
 
 type Props = {
   id: string
@@ -29,6 +30,14 @@ export function TicketDetailPage({ id }: Props) {
 
   function handleItemCreated(item: TicketItem) {
     setTicket((current) => current && { ...current, items: [...current.items, item] })
+  }
+
+  // 解決すると種別が確認済みに変わるので、差し替えるだけで表示する欄も移る
+  function handleItemResolved(resolved: TicketItem) {
+    setTicket(
+      (current) =>
+        current && { ...current, items: current.items.map((item) => (item.id === resolved.id ? resolved : item)) },
+    )
   }
 
   return (
@@ -62,7 +71,7 @@ export function TicketDetailPage({ id }: Props) {
                 ) : (
                   <ul>
                     {items.map((item) => (
-                      <li key={item.id}>{item.body}</li>
+                      <TicketItemView key={item.id} item={item} onResolved={handleItemResolved} />
                     ))}
                   </ul>
                 )}

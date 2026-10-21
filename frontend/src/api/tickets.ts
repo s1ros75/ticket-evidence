@@ -24,6 +24,21 @@ export type TicketItem = {
   resolved_at: string | null
   created_at: string
   updated_at: string
+  evidences: Evidence[]
+}
+
+export type Evidence = {
+  id: number
+  ticket_item_id: number
+  url: string | null
+  memo: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type EvidenceInput = {
+  url: string
+  memo: string
 }
 
 export type TicketDetail = Ticket & {
@@ -72,20 +87,25 @@ export async function fetchTickets(): Promise<Ticket[]> {
   return response.json()
 }
 
-export async function createTicket(input: TicketInput): Promise<Ticket> {
-  const response = await fetch(TICKETS_URL, {
+// POSTして、422ならAPIが返したエラーメッセージをValidationErrorとして投げる
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ticket: input }),
+    body: JSON.stringify(body),
   })
   if (response.status === 422) {
-    const body: { errors: string[] } = await response.json()
-    throw new ValidationError(body.errors)
+    const errorBody: { errors: string[] } = await response.json()
+    throw new ValidationError(errorBody.errors)
   }
   if (!response.ok) {
-    throw new Error(`POST ${TICKETS_URL} failed: ${response.status}`)
+    throw new Error(`POST ${url} failed: ${response.status}`)
   }
   return response.json()
+}
+
+export function createTicket(input: TicketInput): Promise<Ticket> {
+  return postJson(TICKETS_URL, { ticket: input })
 }
 
 export async function fetchTicket(id: string): Promise<TicketDetail> {
@@ -100,19 +120,10 @@ export async function fetchTicket(id: string): Promise<TicketDetail> {
   return response.json()
 }
 
-export async function createTicketItem(ticketId: number, input: TicketItemInput): Promise<TicketItem> {
-  const url = `${TICKETS_URL}/${ticketId}/items`
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ item: input }),
-  })
-  if (response.status === 422) {
-    const body: { errors: string[] } = await response.json()
-    throw new ValidationError(body.errors)
-  }
-  if (!response.ok) {
-    throw new Error(`POST ${url} failed: ${response.status}`)
-  }
-  return response.json()
+export function createTicketItem(ticketId: number, input: TicketItemInput): Promise<TicketItem> {
+  return postJson(`${TICKETS_URL}/${ticketId}/items`, { item: input })
+}
+
+export function resolveTicketItem(ticketId: number, itemId: number, input: EvidenceInput): Promise<TicketItem> {
+  return postJson(`${TICKETS_URL}/${ticketId}/items/${itemId}/resolve`, { evidence: input })
 }
