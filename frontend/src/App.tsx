@@ -1,43 +1,20 @@
-import { useEffect, useState } from 'react'
-import { fetchTickets, type Ticket } from './api/tickets'
-import { TicketForm } from './components/TicketForm'
-import { TicketList } from './components/TicketList'
+import { Route, Routes, useParams } from 'react-router'
+import { TicketDetailPage } from './pages/TicketDetailPage'
+import { TicketsPage } from './pages/TicketsPage'
 import './App.css'
 
+// 別のチケットへ移ったときに前の表示が残らないよう、idをkeyにして作り直す
+function TicketDetailRoute() {
+  const { id = '' } = useParams()
+  return <TicketDetailPage key={id} id={id} />
+}
+
 function App() {
-  const [tickets, setTickets] = useState<Ticket[] | null>(null)
-  const [loadError, setLoadError] = useState(false)
-
-  useEffect(() => {
-    fetchTickets()
-      .then(setTickets)
-      .catch(() => setLoadError(true))
-  }, [])
-
-  function handleCreated(ticket: Ticket) {
-    setTickets((current) => [ticket, ...(current ?? [])])
-  }
-
   return (
-    <main>
-      <h1>チケット</h1>
-
-      <section>
-        <h2>新規作成</h2>
-        <TicketForm onCreated={handleCreated} />
-      </section>
-
-      <section>
-        <h2>一覧</h2>
-        {loadError ? (
-          <p role="alert">一覧を取得できませんでした</p>
-        ) : tickets === null ? (
-          <p>読み込み中…</p>
-        ) : (
-          <TicketList tickets={tickets} />
-        )}
-      </section>
-    </main>
+    <Routes>
+      <Route path="/" element={<TicketsPage />} />
+      <Route path="/tickets/:id" element={<TicketDetailRoute />} />
+    </Routes>
   )
 }
 

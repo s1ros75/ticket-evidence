@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import App from './App'
+
+function renderApp(path = '/') {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <App />
+    </MemoryRouter>,
+  )
+}
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -26,7 +35,7 @@ describe('チケット一覧', () => {
   it('APIから取得したチケットを、ステータスと一緒に表示する', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([existingTicket])))
 
-    render(<App />)
+    renderApp()
 
     expect(await screen.findByText('既存のチケット')).toBeInTheDocument()
     expect(screen.getByText('調査中')).toBeInTheDocument()
@@ -36,7 +45,7 @@ describe('チケット一覧', () => {
   it('チケットが無いときは、その旨を表示する', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])))
 
-    render(<App />)
+    renderApp()
 
     expect(await screen.findByText('チケットはまだありません')).toBeInTheDocument()
   })
@@ -44,7 +53,7 @@ describe('チケット一覧', () => {
   it('一覧の取得に失敗したら、エラーを表示する', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({}, 500)))
 
-    render(<App />)
+    renderApp()
 
     expect(await screen.findByRole('alert')).toHaveTextContent('一覧を取得できませんでした')
   })
@@ -59,7 +68,7 @@ describe('チケット作成フォーム', () => {
       .mockResolvedValueOnce(jsonResponse(created, 201))
     vi.stubGlobal('fetch', fetchMock)
 
-    render(<App />)
+    renderApp()
     await screen.findByText('既存のチケット')
 
     fireEvent.change(screen.getByLabelText('タイトル'), { target: { value: '新しいチケット' } })
@@ -88,11 +97,27 @@ describe('チケット作成フォーム', () => {
         .mockResolvedValueOnce(jsonResponse({ errors: ["Title can't be blank"] }, 422)),
     )
 
-    render(<App />)
+    renderApp()
     await screen.findByText('チケットはまだありません')
 
     fireEvent.click(screen.getByRole('button', { name: '作成' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent("Title can't be blank")
+  })
+})
+
+describe('一覧から詳細へ', () => {
+  it('チケットのタイトルを押すと、詳細画面に移る', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse([existingTicket]))
+      .mockResolvedValueOnce(jsonResponse({ ...existingTicket, items: [] }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp()
+    fireEvent.click(await screen.findByRole('link', { name: '既存のチケット' }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: '既存のチケット' })).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets/1')
   })
 })
