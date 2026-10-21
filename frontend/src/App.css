@@ -155,3 +155,69 @@ section + section {
   color: var(--text-h);
   align-self: flex-start;
 }
+
+.items > ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.item {
+  padding: 8px 0;
+}
+
+.item + .item {
+  border-top: 1px solid var(--border);
+}
+
+.item-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.item-row .body {
+  color: var(--text-h);
+  white-space: pre-wrap;
+}
+
+button.secondary {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 0.85em;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.resolved-at {
+  margin: 4px 0 0;
+  font-size: 0.85em;
+}
+
+.evidences {
+  margin: 4px 0 0;
+  padding-left: 20px;
+  font-size: 0.9em;
+}
+
+.evidences a {
+  overflow-wrap: anywhere;
+}
+
+.evidences .memo {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.resolve-form {
+  margin-top: 8px;
+}
+
+.resolve-form .actions {
+  display: flex;
+  gap: 8px;
+}
