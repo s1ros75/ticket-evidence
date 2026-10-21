@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_155949) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_145704) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "ticket_items", force: :cascade do |t|
+    t.bigint "ticket_id", null: false
+    t.string "kind", null: false
+    t.text "body", null: false
+    t.datetime "resolved_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticket_id", "kind"], name: "index_ticket_items_on_ticket_id_and_kind"
+    t.index ["ticket_id"], name: "index_ticket_items_on_ticket_id"
+  end
 
   create_table "tickets", force: :cascade do |t|
     t.string "title", null: false
@@ -22,4 +33,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_155949) do
     t.datetime "updated_at", null: false
     t.index ["status"], name: "index_tickets_on_status"
   end
+
+  add_foreign_key "ticket_items", "tickets"
 end

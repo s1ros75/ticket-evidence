@@ -10,7 +10,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :tickets, only: [:index, :create]
+      resources :tickets, only: [:index, :show, :create] do
+        resources :items, only: [:create], module: :tickets
+      end
     end
   end
 end

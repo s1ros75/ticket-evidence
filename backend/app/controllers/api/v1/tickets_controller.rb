@@ -8,6 +8,12 @@ module Api
         render json: tickets
       end
 
+      def show
+        ticket = Ticket.find(params[:id])
+
+        render json: ticket.as_json(include: :items)
+      end
+
       def create
         ticket = Ticket.new(ticket_params)
 
