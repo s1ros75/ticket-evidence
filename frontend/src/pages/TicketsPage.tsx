@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { fetchTickets, type Ticket } from '../api/tickets'
+import { fetchTickets, type Ticket, type TicketSummary } from '../api/tickets'
 import { TicketForm } from '../components/TicketForm'
 import { TicketList } from '../components/TicketList'
 
 export function TicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[] | null>(null)
+  const [tickets, setTickets] = useState<TicketSummary[] | null>(null)
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
@@ -13,8 +13,9 @@ export function TicketsPage() {
       .catch(() => setLoadError(true))
   }, [])
 
+  // 作成したばかりのチケットには項目がないので、不明点は0件
   function handleCreated(ticket: Ticket) {
-    setTickets((current) => [ticket, ...(current ?? [])])
+    setTickets((current) => [{ ...ticket, unknown_count: 0 }, ...(current ?? [])])
   }
 
   return (

@@ -9,6 +9,11 @@ export type Ticket = {
   updated_at: string
 }
 
+// 一覧APIは、残っている不明点の数も一緒に返す
+export type TicketSummary = Ticket & {
+  unknown_count: number
+}
+
 export type TicketInput = {
   title: string
   description: string
@@ -79,7 +84,7 @@ export class NotFoundError extends Error {}
 
 const TICKETS_URL = '/api/v1/tickets'
 
-export async function fetchTickets(): Promise<Ticket[]> {
+export async function fetchTickets(): Promise<TicketSummary[]> {
   const response = await fetch(TICKETS_URL)
   if (!response.ok) {
     throw new Error(`GET ${TICKETS_URL} failed: ${response.status}`)

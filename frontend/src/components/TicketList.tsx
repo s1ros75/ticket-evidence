@@ -1,8 +1,8 @@
 import { Link } from 'react-router'
-import { STATUS_LABELS, type Ticket } from '../api/tickets'
+import { STATUS_LABELS, type TicketSummary } from '../api/tickets'
 
 type Props = {
-  tickets: Ticket[]
+  tickets: TicketSummary[]
 }
 
 export function TicketList({ tickets }: Props) {
@@ -18,6 +18,11 @@ export function TicketList({ tickets }: Props) {
           <Link className="title" to={`/tickets/${ticket.id}`}>
             {ticket.title}
           </Link>
+          {ticket.unknown_count > 0 ? (
+            <span className="unknown-count">不明点 {ticket.unknown_count}件</span>
+          ) : (
+            <span className="unknown-count none">不明点なし</span>
+          )}
         </li>
       ))}
     </ul>

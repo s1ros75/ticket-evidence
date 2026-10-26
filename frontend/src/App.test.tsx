@@ -121,3 +121,44 @@ describe('一覧から詳細へ', () => {
     expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets/1')
   })
 })
+
+describe('一覧の不明点の残数', () => {
+  it('不明点が残っていれば件数を、なければ「不明点なし」を表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse([
+          { ...existingTicket, id: 1, title: '不明点があるチケット', unknown_count: 2 },
+          { ...existingTicket, id: 2, title: '不明点がないチケット', unknown_count: 0 },
+        ]),
+      ),
+    )
+
+    renderApp()
+
+    await screen.findByText('不明点があるチケット')
+    const [withUnknowns, withoutUnknowns] = screen.getAllByRole('listitem')
+    expect(withUnknowns).toHaveTextContent('不明点 2件')
+    expect(withoutUnknowns).toHaveTextContent('不明点なし')
+  })
+
+  it('作成したばかりのチケットは「不明点なし」と表示する', async () => {
+    const created = { ...existingTicket, id: 2, title: '新しいチケット' }
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(jsonResponse(created, 201)),
+    )
+
+    renderApp()
+    await screen.findByText('チケットはまだありません')
+
+    fireEvent.change(screen.getByLabelText('タイトル'), { target: { value: '新しいチケット' } })
+    fireEvent.click(screen.getByRole('button', { name: '作成' }))
+
+    expect(await screen.findByRole('listitem')).toHaveTextContent('不明点なし')
+  })
+})
+
