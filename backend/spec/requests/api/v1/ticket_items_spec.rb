@@ -19,6 +19,24 @@ RSpec.describe "GET /api/v1/tickets/:id", type: :request do
     ]
   end
 
+  it "レビュー中なら、最後にレビュー依頼した人を返す" do
+    requester = create_user(role: "reviewer", email: "requester@example.com", name: "依頼した人")
+    ticket = Ticket.create!(title: "要件の確認", status: "in_review")
+    ticket.events.create!(user: requester, action: "review_requested", details: { status: %w[investigating in_review] })
+
+    get "/api/v1/tickets/#{ticket.id}"
+
+    expect(JSON.parse(response.body)["review_requester"]).to eq("id" => requester.id, "name" => "依頼した人")
+  end
+
+  it "レビュー中でなければ、レビュー依頼した人は返さない" do
+    ticket = Ticket.create!(title: "要件の確認")
+
+    get "/api/v1/tickets/#{ticket.id}"
+
+    expect(JSON.parse(response.body)["review_requester"]).to be_nil
+  end
+
   it "存在しないチケットなら404を返す" do
     get "/api/v1/tickets/0"
 

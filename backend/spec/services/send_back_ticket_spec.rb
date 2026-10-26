@@ -46,4 +46,24 @@ RSpec.describe SendBackTicket do
     expect([event.user, event.action]).to eq [user, "sent_back"]
     expect(event.details).to eq("status" => %w[in_review investigating], "reason" => "退会時のデータの扱いが書かれていない")
   end
+
+  describe "自分で依頼したチケット" do
+    let(:requester) { create_user(role: "reviewer", email: "requester@example.com") }
+
+    before do
+      ticket.events.create!(user: requester, action: "review_requested", details: { status: %w[investigating in_review] })
+    end
+
+    it "レビュー依頼した本人は差し戻せない" do
+      result = described_class.call(user: requester, ticket: ticket, reason: "理由")
+
+      expect(result).not_to be_success
+      expect(result.errors).to eq ["自分でレビュー依頼したチケットは、別のレビュアーが確認します"]
+      expect(ticket.reload.status).to eq "in_review"
+    end
+
+    it "別のレビュアーなら差し戻せる" do
+      expect(described_class.call(user: user, ticket: ticket, reason: "理由")).to be_success
+    end
+  end
 end

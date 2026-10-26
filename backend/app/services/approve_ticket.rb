@@ -26,6 +26,11 @@ class ApproveTicket
         raise ActiveRecord::Rollback
       end
 
+      if @ticket.review_requester == @user
+        errors << "自分でレビュー依頼したチケットは、別のレビュアーが確認します"
+        raise ActiveRecord::Rollback
+      end
+
       @ticket.update!(status: "done")
       @ticket.events.create!(user: @user, action: "approved", details: { status: %w[in_review done] })
     end

@@ -28,6 +28,11 @@ class SendBackTicket
         raise ActiveRecord::Rollback
       end
 
+      if @ticket.review_requester == @user
+        errors << "自分でレビュー依頼したチケットは、別のレビュアーが確認します"
+        raise ActiveRecord::Rollback
+      end
+
       if @reason.blank?
         errors << "差し戻しの理由を入力してください"
         raise ActiveRecord::Rollback
