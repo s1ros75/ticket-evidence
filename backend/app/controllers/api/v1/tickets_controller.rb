@@ -9,9 +9,7 @@ module Api
       end
 
       def show
-        ticket = Ticket.includes(items: :evidences).find(params[:id])
-
-        render json: ticket.as_json(include: { items: { include: :evidences } })
+        render_detail(params[:id])
       end
 
       def create
@@ -35,7 +33,34 @@ module Api
         end
       end
 
+      def approve
+        result = ApproveTicket.call(ticket: Ticket.find(params[:id]))
+
+        if result.success?
+          render json: result.ticket
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
+      # 差し戻すと不明点が増えるので、項目も含めた詳細を返す
+      def send_back
+        result = SendBackTicket.call(ticket: Ticket.find(params[:id]), reason: params[:reason].to_s)
+
+        if result.success?
+          render_detail(result.ticket.id)
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
       private
+
+      def render_detail(id)
+        ticket = Ticket.includes(items: :evidences).find(id)
+
+        render json: ticket.as_json(include: { items: { include: :evidences } })
+      end
 
       def ticket_params
         params.require(:ticket).permit(:title, :description)
