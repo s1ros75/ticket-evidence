@@ -10,6 +10,7 @@ import {
   type TicketDetail,
   type TicketItem,
 } from '../api/tickets'
+import { ReviewDecision } from '../components/ReviewDecision'
 import { ReviewRequest } from '../components/ReviewRequest'
 import { TicketItemForm } from '../components/TicketItemForm'
 import { TicketItemView } from '../components/TicketItemView'
@@ -42,8 +43,8 @@ export function TicketDetailPage({ id }: Props) {
     )
   }
 
-  // レビュー依頼のAPIは項目を含まないチケットを返すので、項目は手元のものを残す
-  function handleReviewRequested(updated: Ticket) {
+  // レビュー依頼・完了のAPIは項目を含まないチケットを返すので、項目は手元のものを残す
+  function handleStatusChanged(updated: Ticket) {
     setTicket((current) => current && { ...current, ...updated, items: current.items })
   }
 
@@ -71,8 +72,12 @@ export function TicketDetailPage({ id }: Props) {
             <ReviewRequest
               ticketId={ticket.id}
               unknownCount={ticket.items.filter((item) => item.kind === 'unknown').length}
-              onRequested={handleReviewRequested}
+              onRequested={handleStatusChanged}
             />
+          )}
+
+          {ticket.status === 'in_review' && (
+            <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={setTicket} />
           )}
 
           {ITEM_KINDS.map((kind) => {

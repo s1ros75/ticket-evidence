@@ -143,3 +143,12 @@ export function resolveTicketItem(ticketId: number, itemId: number, input: Evide
 export function requestTicketReview(ticketId: number): Promise<Ticket> {
   return postJson(`${TICKETS_URL}/${ticketId}/request_review`, {})
 }
+
+export function approveTicket(ticketId: number): Promise<Ticket> {
+  return postJson(`${TICKETS_URL}/${ticketId}/approve`, {})
+}
+
+// 差し戻すと理由が不明点として増えるので、項目を含めた詳細が返る
+export function sendBackTicket(ticketId: number, reason: string): Promise<TicketDetail> {
+  return postJson(`${TICKETS_URL}/${ticketId}/send_back`, { reason })
+}

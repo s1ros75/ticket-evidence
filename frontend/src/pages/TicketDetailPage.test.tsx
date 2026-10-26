@@ -277,3 +277,91 @@ describe('レビュー依頼', () => {
     expect(screen.queryByRole('button', { name: 'レビュー依頼に進む' })).not.toBeInTheDocument()
   })
 })
+
+describe('レビュー', () => {
+  const inReview = { ...ticket, status: 'in_review', items: [item(2, 'confirmed', '対象はWeb版のみ')] }
+
+  it('レビュー中なら、完了と差し戻しのボタンを出し、レビュー依頼のボタンは出さない', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(inReview)))
+
+    renderDetail()
+
+    expect(await screen.findByRole('button', { name: '完了にする' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '差し戻す' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'レビュー依頼に進む' })).not.toBeInTheDocument()
+  })
+
+  it('完了にすると、ステータスが完了になり、レビューのボタンが消える', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(inReview))
+      .mockResolvedValueOnce(jsonResponse({ ...inReview, status: 'done', items: undefined }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: '完了にする' }))
+
+    expect(await screen.findByText('完了')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '差し戻す' })).not.toBeInTheDocument()
+    expect(screen.getByText('対象はWeb版のみ')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets/1/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+  })
+
+  it('理由を付けて差し戻すと、調査中に戻り、理由が不明点に入る', async () => {
+    const sentBack = {
+      ...inReview,
+      status: 'investigating',
+      items: [...inReview.items, item(3, 'unknown', '退会時のデータの扱いが書かれていない')],
+    }
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(inReview)).mockResolvedValueOnce(jsonResponse(sentBack))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: '差し戻す' }))
+    fireEvent.change(screen.getByLabelText('差し戻しの理由'), {
+      target: { value: '退会時のデータの扱いが書かれていない' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '理由を付けて差し戻す' }))
+
+    const unknowns = screen.getByRole('region', { name: '不明点' })
+    expect(await within(unknowns).findByText('退会時のデータの扱いが書かれていない')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'レビュー依頼に進む' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: '完了にする' })).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets/1/send_back', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: '退会時のデータの扱いが書かれていない' }),
+    })
+  })
+
+  it('差し戻しに失敗したときは、APIが返したエラーを表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(inReview))
+        .mockResolvedValueOnce(jsonResponse({ errors: ['差し戻しの理由を入力してください'] }, 422)),
+    )
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: '差し戻す' }))
+    fireEvent.click(screen.getByRole('button', { name: '理由を付けて差し戻す' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('差し戻しの理由を入力してください')
+    expect(screen.getByText('レビュー中')).toBeInTheDocument()
+  })
+
+  it('完了したチケットには、レビューのボタンを出さない', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ ...inReview, status: 'done' })))
+
+    renderDetail()
+
+    expect(await screen.findByText('完了')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '完了にする' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '差し戻す' })).not.toBeInTheDocument()
+  })
+})
