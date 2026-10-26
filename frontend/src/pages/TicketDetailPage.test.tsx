@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from '../App'
+import type { User } from '../api/session'
+import { CurrentUserContext } from '../auth/CurrentUserContext'
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -10,11 +12,16 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
-function renderDetail(id = 1) {
+const member: User = { id: 1, name: '担当者', email: 'member@example.com', role: 'member' }
+const reviewer: User = { id: 2, name: 'レビュアー', email: 'reviewer@example.com', role: 'reviewer' }
+
+function renderDetail(id = 1, user: User = member) {
   return render(
-    <MemoryRouter initialEntries={[`/tickets/${id}`]}>
-      <App />
-    </MemoryRouter>,
+    <CurrentUserContext.Provider value={user}>
+      <MemoryRouter initialEntries={[`/tickets/${id}`]}>
+        <App />
+      </MemoryRouter>
+    </CurrentUserContext.Provider>,
   )
 }
 
@@ -284,7 +291,7 @@ describe('レビュー', () => {
   it('レビュー中なら、完了と差し戻しのボタンを出し、レビュー依頼のボタンは出さない', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(inReview)))
 
-    renderDetail()
+    renderDetail(1, reviewer)
 
     expect(await screen.findByRole('button', { name: '完了にする' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '差し戻す' })).toBeInTheDocument()
@@ -298,7 +305,7 @@ describe('レビュー', () => {
       .mockResolvedValueOnce(jsonResponse({ ...inReview, status: 'done', items: undefined }))
     vi.stubGlobal('fetch', fetchMock)
 
-    renderDetail()
+    renderDetail(1, reviewer)
     fireEvent.click(await screen.findByRole('button', { name: '完了にする' }))
 
     expect(await screen.findByText('完了')).toBeInTheDocument()
@@ -320,7 +327,7 @@ describe('レビュー', () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(inReview)).mockResolvedValueOnce(jsonResponse(sentBack))
     vi.stubGlobal('fetch', fetchMock)
 
-    renderDetail()
+    renderDetail(1, reviewer)
     fireEvent.click(await screen.findByRole('button', { name: '差し戻す' }))
     fireEvent.change(screen.getByLabelText('差し戻しの理由'), {
       target: { value: '退会時のデータの扱いが書かれていない' },
@@ -347,7 +354,7 @@ describe('レビュー', () => {
         .mockResolvedValueOnce(jsonResponse({ errors: ['差し戻しの理由を入力してください'] }, 422)),
     )
 
-    renderDetail()
+    renderDetail(1, reviewer)
     fireEvent.click(await screen.findByRole('button', { name: '差し戻す' }))
     fireEvent.click(screen.getByRole('button', { name: '理由を付けて差し戻す' }))
 
@@ -358,9 +365,19 @@ describe('レビュー', () => {
   it('完了したチケットには、レビューのボタンを出さない', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ ...inReview, status: 'done' })))
 
-    renderDetail()
+    renderDetail(1, reviewer)
 
     expect(await screen.findByText('完了')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '完了にする' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '差し戻す' })).not.toBeInTheDocument()
+  })
+
+  it('担当者には、完了と差し戻しのボタンを出さず、確認待ちと表示する', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(inReview)))
+
+    renderDetail(1, member)
+
+    expect(await screen.findByText('レビュアーの確認待ちです')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '完了にする' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '差し戻す' })).not.toBeInTheDocument()
   })

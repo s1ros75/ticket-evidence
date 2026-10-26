@@ -1,3 +1,8 @@
+import { getJson, postJson } from './client'
+
+// 画面側はこれまでどおり tickets から読み込めるようにする
+export { NotFoundError, ValidationError } from './client'
+
 export type TicketStatus = 'investigating' | 'in_review' | 'done'
 
 export type Ticket = {
@@ -76,60 +81,18 @@ export const ITEM_KIND_LABELS: Record<TicketItemKind, string> = {
   confirmed: '確認済み',
 }
 
-// 422のときに、APIが返したエラーメッセージを画面に渡すための例外
-export class ValidationError extends Error {
-  messages: string[]
-
-  constructor(messages: string[]) {
-    super(messages.join(', '))
-    this.messages = messages
-  }
-}
-
-export class NotFoundError extends Error {}
-
 const TICKETS_URL = '/api/v1/tickets'
 
-export async function fetchTickets(status?: TicketStatus): Promise<TicketSummary[]> {
-  const url = status ? `${TICKETS_URL}?${new URLSearchParams({ status })}` : TICKETS_URL
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed: ${response.status}`)
-  }
-  return response.json()
-}
-
-// POSTして、422ならAPIが返したエラーメッセージをValidationErrorとして投げる
-async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  if (response.status === 422) {
-    const errorBody: { errors: string[] } = await response.json()
-    throw new ValidationError(errorBody.errors)
-  }
-  if (!response.ok) {
-    throw new Error(`POST ${url} failed: ${response.status}`)
-  }
-  return response.json()
+export function fetchTickets(status?: TicketStatus): Promise<TicketSummary[]> {
+  return getJson(status ? `${TICKETS_URL}?${new URLSearchParams({ status })}` : TICKETS_URL)
 }
 
 export function createTicket(input: TicketInput): Promise<Ticket> {
   return postJson(TICKETS_URL, { ticket: input })
 }
 
-export async function fetchTicket(id: string): Promise<TicketDetail> {
-  const url = `${TICKETS_URL}/${id}`
-  const response = await fetch(url)
-  if (response.status === 404) {
-    throw new NotFoundError()
-  }
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed: ${response.status}`)
-  }
-  return response.json()
+export function fetchTicket(id: string): Promise<TicketDetail> {
+  return getJson(`${TICKETS_URL}/${id}`)
 }
 
 export function createTicketItem(ticketId: number, input: TicketItemInput): Promise<TicketItem> {

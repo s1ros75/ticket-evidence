@@ -2,12 +2,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from './App'
+import { CurrentUserContext } from './auth/CurrentUserContext'
+
+const member = { id: 1, name: '担当者', email: 'member@example.com', role: 'member' } as const
 
 function renderApp(path = '/') {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-    </MemoryRouter>,
+    <CurrentUserContext.Provider value={member}>
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    </CurrentUserContext.Provider>,
   )
 }
 
