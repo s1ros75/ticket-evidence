@@ -13,6 +13,7 @@ import {
 import { useCurrentUser } from '../auth/CurrentUserContext'
 import { ReviewDecision } from '../components/ReviewDecision'
 import { ReviewRequest } from '../components/ReviewRequest'
+import { TicketHistory } from '../components/TicketHistory'
 import { TicketItemForm } from '../components/TicketItemForm'
 import { TicketItemView } from '../components/TicketItemView'
 
@@ -26,6 +27,9 @@ export function TicketDetailPage({ id }: Props) {
   const currentUser = useCurrentUser()
   const [ticket, setTicket] = useState<TicketDetail | null>(null)
   const [loadError, setLoadError] = useState<LoadError | null>(null)
+  // 操作するたびに増やし、開いている変更履歴に読み直しを知らせる
+  const [historyVersion, setHistoryVersion] = useState(0)
+  const touched = () => setHistoryVersion((version) => version + 1)
 
   useEffect(() => {
     fetchTicket(id)
@@ -35,6 +39,7 @@ export function TicketDetailPage({ id }: Props) {
 
   function handleItemCreated(item: TicketItem) {
     setTicket((current) => current && { ...current, items: [...current.items, item] })
+    touched()
   }
 
   // 解決すると種別が確認済みに変わるので、差し替えるだけで表示する欄も移る
@@ -43,11 +48,18 @@ export function TicketDetailPage({ id }: Props) {
       (current) =>
         current && { ...current, items: current.items.map((item) => (item.id === resolved.id ? resolved : item)) },
     )
+    touched()
   }
 
   // レビュー依頼・完了のAPIは項目を含まないチケットを返すので、項目は手元のものを残す
   function handleStatusChanged(updated: Ticket) {
     setTicket((current) => current && { ...current, ...updated, items: current.items })
+    touched()
+  }
+
+  function handleSentBack(updated: TicketDetail) {
+    setTicket(updated)
+    touched()
   }
 
   return (
@@ -80,7 +92,7 @@ export function TicketDetailPage({ id }: Props) {
 
           {ticket.status === 'in_review' &&
             (currentUser.role === 'reviewer' ? (
-              <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={setTicket} />
+              <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={handleSentBack} />
             ) : (
               <p className="waiting">レビュアーの確認待ちです</p>
             ))}
@@ -108,6 +120,8 @@ export function TicketDetailPage({ id }: Props) {
             <h2>項目を追加</h2>
             <TicketItemForm ticketId={ticket.id} onCreated={handleItemCreated} />
           </section>
+
+          <TicketHistory ticketId={ticket.id} refreshKey={historyVersion} />
         </>
       )}
     </main>

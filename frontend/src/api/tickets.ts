@@ -115,3 +115,34 @@ export function approveTicket(ticketId: number): Promise<Ticket> {
 export function sendBackTicket(ticketId: number, reason: string): Promise<TicketDetail> {
   return postJson(`${TICKETS_URL}/${ticketId}/send_back`, { reason })
 }
+
+type StatusChange = [TicketStatus, TicketStatus]
+
+type EventBase = {
+  id: number
+  created_at: string
+  user: { id: number; name: string }
+}
+
+// 操作ごとに details の中身が違うので、action で見分けられる型にしておく
+export type TicketEvent = EventBase &
+  (
+    | { action: 'ticket_created'; details: { title: string } }
+    | { action: 'item_added'; details: { item_id: number; kind: TicketItemKind; body: string } }
+    | {
+        action: 'item_resolved'
+        details: {
+          item_id: number
+          body: string
+          kind: [TicketItemKind, TicketItemKind]
+          evidence: { url: string | null; memo: string | null }
+        }
+      }
+    | { action: 'review_requested'; details: { status: StatusChange } }
+    | { action: 'approved'; details: { status: StatusChange } }
+    | { action: 'sent_back'; details: { status: StatusChange; reason: string } }
+  )
+
+export function fetchTicketEvents(ticketId: number): Promise<TicketEvent[]> {
+  return getJson(`${TICKETS_URL}/${ticketId}/events`)
+}
