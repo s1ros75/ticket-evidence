@@ -17,7 +17,7 @@ if Rails.env.development?
     User.find_or_create_by!(email: attributes[:email]) do |user|
       user.name = attributes[:name]
       user.role = attributes[:role]
-      user.password = "password123"
+      user.password = "password1234"
     end
   end
 end

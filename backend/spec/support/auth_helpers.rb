@@ -1,5 +1,5 @@
 module AuthHelpers
-  PASSWORD = "password123".freeze
+  PASSWORD = "correct-horse-battery".freeze
 
   def create_user(role: "member", email: "#{role}@example.com", name: role == "reviewer" ? "レビュアー" : "担当者")
     User.create!(name: name, email: email, password: PASSWORD, role: role)
@@ -15,4 +15,8 @@ end
 
 RSpec.configure do |config|
   config.include AuthHelpers
+  config.include ActiveSupport::Testing::TimeHelpers
+
+  # ログイン試行の回数はテストをまたいで残るので、テストごとに消す
+  config.before { Rails.application.config.x.rate_limit_store.clear }
 end

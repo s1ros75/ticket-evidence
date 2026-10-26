@@ -9,7 +9,21 @@ class ApplicationController < ActionController::API
   private
 
   def current_user
-    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
+    current_user_session&.user
+  end
+
+  # Cookieにはサーバー側のセッションのidだけを持たせ、毎回DBで有効かを確かめる
+  def current_user_session
+    return @current_user_session if defined?(@current_user_session)
+
+    user_session = UserSession.includes(:user).find_by(id: session[:user_session_id]) if session[:user_session_id]
+    if user_session&.expired?
+      user_session.destroy
+      user_session = nil
+    end
+    user_session&.record_activity!
+
+    @current_user_session = user_session
   end
 
   def require_login
