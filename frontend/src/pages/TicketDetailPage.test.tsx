@@ -382,3 +382,109 @@ describe('レビュー', () => {
     expect(screen.queryByRole('button', { name: '差し戻す' })).not.toBeInTheDocument()
   })
 })
+
+describe('変更履歴', () => {
+  const events = [
+    {
+      id: 3,
+      action: 'item_resolved',
+      details: {
+        item_id: 1,
+        body: '締め切りはいつか',
+        kind: ['unknown', 'confirmed'],
+        evidence: { url: null, memo: '11月末と確認' },
+      },
+      created_at: '2026-10-21T12:00:00Z',
+      user: { id: 1, name: '佐藤' },
+    },
+    {
+      id: 2,
+      action: 'item_added',
+      details: { item_id: 1, kind: 'unknown', body: '締め切りはいつか' },
+      created_at: '2026-10-21T11:00:00Z',
+      user: { id: 1, name: '佐藤' },
+    },
+    {
+      id: 1,
+      action: 'ticket_created',
+      details: { title: '会員登録の要件確認' },
+      created_at: '2026-10-21T10:00:00Z',
+      user: { id: 2, name: '鈴木' },
+    },
+  ]
+
+  it('ボタンを押すと、変更履歴を新しい順に、操作した人と内容つきで表示する', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(ticket)).mockResolvedValueOnce(jsonResponse(events))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: '変更履歴を表示' }))
+
+    const history = await screen.findByRole('region', { name: '変更履歴' })
+    const rows = await within(history).findAllByRole('listitem')
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringContaining('佐藤不明点を解決：締め切りはいつか（根拠：11月末と確認）'),
+      expect.stringContaining('佐藤不明点を追加：締め切りはいつか'),
+      expect.stringContaining('鈴木チケットを作成：会員登録の要件確認'),
+    ])
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets/1/events')
+  })
+
+  it('ステータスの変更は、変更前後と理由を表示する', async () => {
+    const statusEvents = [
+      {
+        id: 2,
+        action: 'sent_back',
+        details: { status: ['in_review', 'investigating'], reason: '退会時の扱いが不明' },
+        created_at: '2026-10-21T11:00:00Z',
+        user: { id: 2, name: '鈴木' },
+      },
+      {
+        id: 1,
+        action: 'review_requested',
+        details: { status: ['investigating', 'in_review'] },
+        created_at: '2026-10-21T10:00:00Z',
+        user: { id: 1, name: '佐藤' },
+      },
+    ]
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(jsonResponse(ticket)).mockResolvedValueOnce(jsonResponse(statusEvents)),
+    )
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: '変更履歴を表示' }))
+
+    const rows = await within(await screen.findByRole('region', { name: '変更履歴' })).findAllByRole('listitem')
+    expect(rows[0]).toHaveTextContent('差し戻し（レビュー中 → 調査中）：退会時の扱いが不明')
+    expect(rows[1]).toHaveTextContent('レビュー依頼（調査中 → レビュー中）')
+  })
+
+  it('履歴を開いているときに操作すると、履歴を読み直す', async () => {
+    const added = { ...item(4, 'unknown', '支払い方法は何があるか') }
+    const addedEvent = {
+      id: 9,
+      action: 'item_added',
+      details: { item_id: 4, kind: 'unknown', body: '支払い方法は何があるか' },
+      created_at: '2026-10-21T13:00:00Z',
+      user: { id: 1, name: '佐藤' },
+    }
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ ...ticket, items: [] }))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse(added, 201))
+      .mockResolvedValueOnce(jsonResponse([addedEvent]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: '変更履歴を表示' }))
+    const history = await screen.findByRole('region', { name: '変更履歴' })
+    await within(history).findByText('まだ履歴はありません')
+
+    fireEvent.change(screen.getByLabelText('内容'), { target: { value: '支払い方法は何があるか' } })
+    fireEvent.click(screen.getByRole('button', { name: '追加' }))
+
+    expect(await within(history).findByText(/不明点を追加：支払い方法は何があるか/)).toBeInTheDocument()
+  })
+})
