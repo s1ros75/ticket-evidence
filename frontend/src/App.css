@@ -250,3 +250,15 @@ button.primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.unknown-count {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.8em;
+  color: #dc2626;
+}
+
+.unknown-count.none {
+  color: var(--text);
+  opacity: 0.7;
+}
