@@ -53,6 +53,8 @@ export type EvidenceInput = {
 
 export type TicketDetail = Ticket & {
   items: TicketItem[]
+  // レビュー中のとき、最後にレビュー依頼した人。本人は完了・差し戻しができない
+  review_requester: { id: number; name: string } | null
 }
 
 export type TicketItemInput = {

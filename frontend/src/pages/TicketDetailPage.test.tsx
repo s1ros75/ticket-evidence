@@ -488,3 +488,43 @@ describe('変更履歴', () => {
     expect(await within(history).findByText(/不明点を追加：支払い方法は何があるか/)).toBeInTheDocument()
   })
 })
+
+describe('自分で依頼したレビュー', () => {
+  const inReview = { ...ticket, status: 'in_review', items: [], review_requester: { id: 2, name: 'レビュアー' } }
+
+  it('依頼した本人のレビュアーには、完了と差し戻しを出さず、別のレビュアー待ちと表示する', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(inReview)))
+
+    renderDetail(1, reviewer)
+
+    expect(await screen.findByText('あなたが依頼したため、別のレビュアーの確認待ちです')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '完了にする' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '差し戻す' })).not.toBeInTheDocument()
+  })
+
+  it('別の人が依頼したチケットなら、レビュアーに完了と差し戻しを出す', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse({ ...inReview, review_requester: { id: 1, name: '担当者' } })),
+    )
+
+    renderDetail(1, reviewer)
+
+    expect(await screen.findByRole('button', { name: '完了にする' })).toBeInTheDocument()
+  })
+
+  it('レビュアーが自分でレビュー依頼すると、そのまま別のレビュアー待ちになる', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ ...ticket, items: [], review_requester: null }))
+      .mockResolvedValueOnce(jsonResponse({ ...ticket, status: 'in_review', items: undefined }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderDetail(1, reviewer)
+    fireEvent.click(await screen.findByRole('button', { name: 'レビュー依頼に進む' }))
+
+    expect(await screen.findByText('あなたが依頼したため、別のレビュアーの確認待ちです')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '完了にする' })).not.toBeInTheDocument()
+  })
+})
+

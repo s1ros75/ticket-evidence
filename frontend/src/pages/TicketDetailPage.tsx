@@ -57,6 +57,12 @@ export function TicketDetailPage({ id }: Props) {
     touched()
   }
 
+  // 自分でレビュー依頼したので、依頼した人は自分になる
+  function handleReviewRequested(updated: Ticket) {
+    handleStatusChanged(updated)
+    setTicket((current) => current && { ...current, review_requester: { id: currentUser.id, name: currentUser.name } })
+  }
+
   function handleSentBack(updated: TicketDetail) {
     setTicket(updated)
     touched()
@@ -86,15 +92,17 @@ export function TicketDetailPage({ id }: Props) {
             <ReviewRequest
               ticketId={ticket.id}
               unknownCount={ticket.items.filter((item) => item.kind === 'unknown').length}
-              onRequested={handleStatusChanged}
+              onRequested={handleReviewRequested}
             />
           )}
 
           {ticket.status === 'in_review' &&
-            (currentUser.role === 'reviewer' ? (
-              <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={handleSentBack} />
-            ) : (
+            (currentUser.role !== 'reviewer' ? (
               <p className="waiting">レビュアーの確認待ちです</p>
+            ) : ticket.review_requester?.id === currentUser.id ? (
+              <p className="waiting">あなたが依頼したため、別のレビュアーの確認待ちです</p>
+            ) : (
+              <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={handleSentBack} />
             ))}
 
           {ITEM_KINDS.map((kind) => {
