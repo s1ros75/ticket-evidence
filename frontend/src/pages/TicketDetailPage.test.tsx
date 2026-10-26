@@ -217,3 +217,63 @@ describe('項目の解決', () => {
     expect(within(unknowns).getByText('締め切りはいつか')).toBeInTheDocument()
   })
 })
+
+describe('レビュー依頼', () => {
+  it('不明点が残っていれば、ボタンを押せず、残数を表示する', async () => {
+    const items = [item(1, 'unknown', '締め切りはいつか'), item(2, 'unknown', '支払い方法は何があるか')]
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ ...ticket, items })))
+
+    renderDetail()
+
+    expect(await screen.findByRole('button', { name: 'レビュー依頼に進む' })).toBeDisabled()
+    expect(screen.getByText('不明点が2件残っています。すべて解決するとレビュー依頼に進めます')).toBeInTheDocument()
+  })
+
+  it('不明点がなければレビュー依頼に進み、ステータスがレビュー中になる', async () => {
+    const items = [item(1, 'confirmed', '対象はWeb版のみ'), item(2, 'assumption', '既存の会員情報を使う')]
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ ...ticket, items }))
+      .mockResolvedValueOnce(jsonResponse({ ...ticket, status: 'in_review', items: undefined }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: 'レビュー依頼に進む' }))
+
+    expect(await screen.findByText('レビュー中')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'レビュー依頼に進む' })).not.toBeInTheDocument()
+    expect(screen.getByText('対象はWeb版のみ')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets/1/request_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+  })
+
+  it('APIに断られたときは、返されたエラーを表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ ...ticket, items: [] }))
+        .mockResolvedValueOnce(
+          jsonResponse({ errors: ['不明点が1件残っているため、レビュー依頼に進めません'] }, 422),
+        ),
+    )
+
+    renderDetail()
+    fireEvent.click(await screen.findByRole('button', { name: 'レビュー依頼に進む' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('不明点が1件残っているため、レビュー依頼に進めません')
+    expect(screen.getByText('調査中')).toBeInTheDocument()
+  })
+
+  it('調査中でなければ、レビュー依頼のボタンを出さない', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ ...ticket, status: 'in_review' })))
+
+    renderDetail()
+
+    expect(await screen.findByText('レビュー中')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'レビュー依頼に進む' })).not.toBeInTheDocument()
+  })
+})

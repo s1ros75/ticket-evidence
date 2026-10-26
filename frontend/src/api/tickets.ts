@@ -127,3 +127,7 @@ export function createTicketItem(ticketId: number, input: TicketItemInput): Prom
 export function resolveTicketItem(ticketId: number, itemId: number, input: EvidenceInput): Promise<TicketItem> {
   return postJson(`${TICKETS_URL}/${ticketId}/items/${itemId}/resolve`, { evidence: input })
 }
+
+export function requestTicketReview(ticketId: number): Promise<Ticket> {
+  return postJson(`${TICKETS_URL}/${ticketId}/request_review`, {})
+}

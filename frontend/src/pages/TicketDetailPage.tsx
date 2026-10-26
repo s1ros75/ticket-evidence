@@ -6,9 +6,11 @@ import {
   ITEM_KINDS,
   NotFoundError,
   STATUS_LABELS,
+  type Ticket,
   type TicketDetail,
   type TicketItem,
 } from '../api/tickets'
+import { ReviewRequest } from '../components/ReviewRequest'
 import { TicketItemForm } from '../components/TicketItemForm'
 import { TicketItemView } from '../components/TicketItemView'
 
@@ -40,6 +42,11 @@ export function TicketDetailPage({ id }: Props) {
     )
   }
 
+  // レビュー依頼のAPIは項目を含まないチケットを返すので、項目は手元のものを残す
+  function handleReviewRequested(updated: Ticket) {
+    setTicket((current) => current && { ...current, ...updated, items: current.items })
+  }
+
   return (
     <main>
       <p>
@@ -59,6 +66,14 @@ export function TicketDetailPage({ id }: Props) {
             <span className={`status status-${ticket.status}`}>{STATUS_LABELS[ticket.status]}</span>
           </p>
           {ticket.description && <p className="description">{ticket.description}</p>}
+
+          {ticket.status === 'investigating' && (
+            <ReviewRequest
+              ticketId={ticket.id}
+              unknownCount={ticket.items.filter((item) => item.kind === 'unknown').length}
+              onRequested={handleReviewRequested}
+            />
+          )}
 
           {ITEM_KINDS.map((kind) => {
             const items = ticket.items.filter((item) => item.kind === kind)

@@ -221,3 +221,32 @@ button.secondary {
   display: flex;
   gap: 8px;
 }
+
+.review-request {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-request .blocked {
+  margin: 0;
+  font-size: 0.9em;
+  color: #dc2626;
+}
+
+button.primary {
+  align-self: flex-start;
+  font: inherit;
+  padding: 8px 20px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
