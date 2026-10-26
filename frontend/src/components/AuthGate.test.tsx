@@ -103,4 +103,23 @@ describe('ログイン', () => {
 
     expect(await screen.findByLabelText('パスワード')).toBeInTheDocument()
   })
+
+  it('ヘッダーのリンクで、一覧とダッシュボードを行き来できる', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(member))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(
+        jsonResponse({ status_counts: { investigating: 0, in_review: 0, done: 0 }, investigating_with_unknowns: 0 }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderGate()
+    await screen.findByText('チケットはまだありません')
+    fireEvent.click(screen.getByRole('link', { name: 'ダッシュボード' }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'ダッシュボード' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'チケット一覧' })).toHaveAttribute('href', '/')
+  })
 })
+
