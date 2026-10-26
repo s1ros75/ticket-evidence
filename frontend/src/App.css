@@ -278,3 +278,21 @@ button.primary:disabled {
   background: var(--bg);
   color: var(--text-h);
 }
+
+.review-decision {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-decision .actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-decision button.secondary {
+  font-size: 1em;
+  padding: 8px 20px;
+}
