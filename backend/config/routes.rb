@@ -11,7 +11,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :tickets, only: [:index, :show, :create] do
-        post :request_review, on: :member
+        member do
+          post :request_review
+          post :approve
+          post :send_back
+        end
         resources :items, only: [:create], module: :tickets do
           post :resolve, on: :member
         end
