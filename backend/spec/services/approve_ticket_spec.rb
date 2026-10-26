@@ -27,4 +27,24 @@ RSpec.describe ApproveTicket do
     event = ticket.events.sole
     expect([event.user, event.action, event.details]).to eq [user, "approved", { "status" => %w[in_review done] }]
   end
+
+  describe "自分で依頼したチケット" do
+    let(:requester) { create_user(role: "reviewer", email: "requester@example.com") }
+
+    before do
+      ticket.events.create!(user: requester, action: "review_requested", details: { status: %w[investigating in_review] })
+    end
+
+    it "レビュー依頼した本人は完了にできない" do
+      result = described_class.call(user: requester, ticket: ticket)
+
+      expect(result).not_to be_success
+      expect(result.errors).to eq ["自分でレビュー依頼したチケットは、別のレビュアーが確認します"]
+      expect(ticket.reload.status).to eq "in_review"
+    end
+
+    it "別のレビュアーなら完了にできる" do
+      expect(described_class.call(user: user, ticket: ticket)).to be_success
+    end
+  end
 end

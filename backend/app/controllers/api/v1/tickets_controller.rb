@@ -68,6 +68,7 @@ module Api
         ticket = Ticket.includes(items: :evidences).find(id)
 
         render json: ticket.as_json(include: { items: { include: :evidences } })
+                           .merge(review_requester: ticket.review_requester&.as_json(only: %i[id name]))
       end
 
       def ticket_params

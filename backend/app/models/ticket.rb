@@ -11,5 +11,12 @@ class Ticket < ApplicationRecord
   }
 
   validates :title, presence: true
+
+  # レビュー中のチケットを、最後にレビュー依頼した人。依頼した本人は完了・差し戻しができない
+  def review_requester
+    return unless status == "in_review"
+
+    events.where(action: "review_requested").order(created_at: :desc, id: :desc).first&.user
+  end
   validates :status, inclusion: { in: STATUSES }
 end
