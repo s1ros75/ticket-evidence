@@ -11,7 +11,8 @@ class SendBackTicket
     new(...).call
   end
 
-  def initialize(ticket:, reason:)
+  def initialize(user:, ticket:, reason:)
+    @user = user
     @ticket = ticket
     @reason = reason
   end
@@ -34,6 +35,11 @@ class SendBackTicket
 
       @ticket.items.create!(kind: "unknown", body: @reason.strip)
       @ticket.update!(status: "investigating")
+      @ticket.events.create!(
+        user: @user,
+        action: "sent_back",
+        details: { status: %w[in_review investigating], reason: @reason.strip }
+      )
     end
 
     Result.new(ticket: @ticket, errors: errors)

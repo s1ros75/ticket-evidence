@@ -2,6 +2,7 @@ class Ticket < ApplicationRecord
   STATUSES = %w[investigating in_review done].freeze
 
   has_many :items, -> { order(:created_at, :id) }, class_name: "TicketItem", dependent: :destroy
+  has_many :events, class_name: "TicketEvent", dependent: :destroy
 
   # 一覧で使う。チケットごとにSQLを発行しないよう、残っている不明点の数をサブクエリで一緒に取る
   scope :with_unknown_count, -> {

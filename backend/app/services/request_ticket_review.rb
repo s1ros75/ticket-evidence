@@ -11,7 +11,8 @@ class RequestTicketReview
     new(...).call
   end
 
-  def initialize(ticket:)
+  def initialize(user:, ticket:)
+    @user = user
     @ticket = ticket
   end
 
@@ -33,6 +34,7 @@ class RequestTicketReview
       end
 
       @ticket.update!(status: "in_review")
+      @ticket.events.create!(user: @user, action: "review_requested", details: { status: %w[investigating in_review] })
     end
 
     Result.new(ticket: @ticket, errors: errors)

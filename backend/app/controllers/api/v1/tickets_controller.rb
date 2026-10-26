@@ -16,8 +16,14 @@ module Api
 
       def create
         ticket = Ticket.new(ticket_params)
+        created = Ticket.transaction do
+          next false unless ticket.save
 
-        if ticket.save
+          ticket.events.create!(user: current_user, action: "ticket_created", details: { title: ticket.title })
+          true
+        end
+
+        if created
           render json: ticket, status: :created
         else
           render json: { errors: ticket.errors.full_messages }, status: :unprocessable_entity
@@ -26,7 +32,7 @@ module Api
 
       def request_review
         ticket = Ticket.find(params[:id])
-        result = RequestTicketReview.call(ticket: ticket)
+        result = RequestTicketReview.call(user: current_user, ticket: ticket)
 
         if result.success?
           render json: result.ticket
@@ -36,7 +42,7 @@ module Api
       end
 
       def approve
-        result = ApproveTicket.call(ticket: Ticket.find(params[:id]))
+        result = ApproveTicket.call(user: current_user, ticket: Ticket.find(params[:id]))
 
         if result.success?
           render json: result.ticket
@@ -47,7 +53,7 @@ module Api
 
       # 差し戻すと不明点が増えるので、項目も含めた詳細を返す
       def send_back
-        result = SendBackTicket.call(ticket: Ticket.find(params[:id]), reason: params[:reason].to_s)
+        result = SendBackTicket.call(user: current_user, ticket: Ticket.find(params[:id]), reason: params[:reason].to_s)
 
         if result.success?
           render_detail(result.ticket.id)

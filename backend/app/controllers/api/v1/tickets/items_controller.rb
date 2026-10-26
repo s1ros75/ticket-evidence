@@ -5,8 +5,18 @@ module Api
         def create
           ticket = Ticket.find(params[:ticket_id])
           item = ticket.items.new(item_params)
+          created = TicketItem.transaction do
+            next false unless item.save
 
-          if item.save
+            ticket.events.create!(
+              user: current_user,
+              action: "item_added",
+              details: { item_id: item.id, kind: item.kind, body: item.body }
+            )
+            true
+          end
+
+          if created
             render json: item.as_json(include: :evidences), status: :created
           else
             render json: { errors: item.errors.full_messages }, status: :unprocessable_entity
@@ -15,7 +25,7 @@ module Api
 
         def resolve
           item = Ticket.find(params[:ticket_id]).items.find(params[:id])
-          result = ResolveTicketItem.call(item: item, evidence_params: evidence_params)
+          result = ResolveTicketItem.call(user: current_user, item: item, evidence_params: evidence_params)
 
           if result.success?
             render json: result.item.as_json(include: :evidences)

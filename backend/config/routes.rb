@@ -17,6 +17,7 @@ Rails.application.routes.draw do
           post :approve
           post :send_back
         end
+        resources :events, only: [:index], module: :tickets
         resources :items, only: [:create], module: :tickets do
           post :resolve, on: :member
         end
