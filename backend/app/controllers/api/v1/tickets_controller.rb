@@ -24,6 +24,17 @@ module Api
         end
       end
 
+      def request_review
+        ticket = Ticket.find(params[:id])
+        result = RequestTicketReview.call(ticket: ticket)
+
+        if result.success?
+          render json: result.ticket
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def ticket_params
