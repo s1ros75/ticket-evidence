@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "POST /api/v1/tickets/:ticket_id/items/:id/resolve", type: :request do
+  before { sign_in }
+
   let(:ticket) { Ticket.create!(title: "要件の確認") }
   let(:item) { ticket.items.create!(kind: "unknown", body: "締め切りはいつか") }
 
@@ -37,6 +39,8 @@ RSpec.describe "POST /api/v1/tickets/:ticket_id/items/:id/resolve", type: :reque
 end
 
 RSpec.describe "GET /api/v1/tickets/:id（根拠）", type: :request do
+  before { sign_in }
+
   it "項目ごとに根拠を含めて返す" do
     ticket = Ticket.create!(title: "要件の確認")
     item = ticket.items.create!(kind: "confirmed", body: "対象はWeb版のみ")

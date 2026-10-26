@@ -28,5 +28,13 @@ module Backend
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # ログインをCookieのセッションで保つ（API専用モードでは外れているので足す）
+    # 画面とAPIはViteのプロキシで同じオリジンになるので、SameSite=Laxで送られる
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore,
+                          key: "_ticket_evidence_session",
+                          same_site: :lax,
+                          secure: Rails.env.production?
   end
 end

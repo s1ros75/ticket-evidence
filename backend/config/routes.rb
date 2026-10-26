@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resource :session, only: [:show, :create, :destroy]
       resources :tickets, only: [:index, :show, :create] do
         member do
           post :request_review
