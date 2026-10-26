@@ -10,6 +10,7 @@ import {
   type TicketDetail,
   type TicketItem,
 } from '../api/tickets'
+import { useCurrentUser } from '../auth/CurrentUserContext'
 import { ReviewDecision } from '../components/ReviewDecision'
 import { ReviewRequest } from '../components/ReviewRequest'
 import { TicketItemForm } from '../components/TicketItemForm'
@@ -22,6 +23,7 @@ type Props = {
 type LoadError = 'not_found' | 'failed'
 
 export function TicketDetailPage({ id }: Props) {
+  const currentUser = useCurrentUser()
   const [ticket, setTicket] = useState<TicketDetail | null>(null)
   const [loadError, setLoadError] = useState<LoadError | null>(null)
 
@@ -76,9 +78,12 @@ export function TicketDetailPage({ id }: Props) {
             />
           )}
 
-          {ticket.status === 'in_review' && (
-            <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={setTicket} />
-          )}
+          {ticket.status === 'in_review' &&
+            (currentUser.role === 'reviewer' ? (
+              <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={setTicket} />
+            ) : (
+              <p className="waiting">レビュアーの確認待ちです</p>
+            ))}
 
           {ITEM_KINDS.map((kind) => {
             const items = ticket.items.filter((item) => item.kind === kind)

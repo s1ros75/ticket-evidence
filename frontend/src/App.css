@@ -296,3 +296,38 @@ button.primary:disabled {
   font-size: 1em;
   padding: 8px 20px;
 }
+
+.app-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 16px 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.app-header .user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-h);
+}
+
+.app-header .role {
+  font-size: 0.8em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.login {
+  max-width: 400px;
+}
+
+.waiting {
+  margin-top: 16px;
+  font-size: 0.9em;
+}
