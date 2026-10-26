@@ -2,7 +2,7 @@ module Api
   module V1
     class TicketsController < ApplicationController
       def index
-        tickets = Ticket.order(created_at: :desc)
+        tickets = Ticket.with_unknown_count.order(created_at: :desc)
         tickets = tickets.where(status: params[:status].to_s) if params[:status].present?
 
         render json: tickets
