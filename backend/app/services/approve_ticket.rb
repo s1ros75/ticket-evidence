@@ -10,7 +10,8 @@ class ApproveTicket
     new(...).call
   end
 
-  def initialize(ticket:)
+  def initialize(user:, ticket:)
+    @user = user
     @ticket = ticket
   end
 
@@ -26,6 +27,7 @@ class ApproveTicket
       end
 
       @ticket.update!(status: "done")
+      @ticket.events.create!(user: @user, action: "approved", details: { status: %w[in_review done] })
     end
 
     Result.new(ticket: @ticket, errors: errors)

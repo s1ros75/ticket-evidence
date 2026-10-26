@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_153952) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_155013) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_153952) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["ticket_item_id"], name: "index_evidences_on_ticket_item_id"
+  end
+
+  create_table "ticket_events", force: :cascade do |t|
+    t.bigint "ticket_id", null: false
+    t.bigint "user_id", null: false
+    t.string "action", null: false
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticket_id", "created_at"], name: "index_ticket_events_on_ticket_id_and_created_at"
+    t.index ["ticket_id"], name: "index_ticket_events_on_ticket_id"
+    t.index ["user_id"], name: "index_ticket_events_on_user_id"
   end
 
   create_table "ticket_items", force: :cascade do |t|
@@ -54,5 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_153952) do
   end
 
   add_foreign_key "evidences", "ticket_items"
+  add_foreign_key "ticket_events", "tickets"
+  add_foreign_key "ticket_events", "users"
   add_foreign_key "ticket_items", "tickets"
 end

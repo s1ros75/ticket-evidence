@@ -11,7 +11,8 @@ class ResolveTicketItem
     new(...).call
   end
 
-  def initialize(item:, evidence_params:)
+  def initialize(user:, item:, evidence_params:)
+    @user = user
     @item = item
     @evidence_params = evidence_params
   end
@@ -34,7 +35,18 @@ class ResolveTicketItem
         raise ActiveRecord::Rollback
       end
 
+      kind_before = @item.kind
       @item.update!(kind: "confirmed", resolved_at: Time.current)
+      @item.ticket.events.create!(
+        user: @user,
+        action: "item_resolved",
+        details: {
+          item_id: @item.id,
+          body: @item.body,
+          kind: [kind_before, "confirmed"],
+          evidence: { url: evidence.url, memo: evidence.memo }
+        }
+      )
     end
 
     Result.new(item: @item, errors: errors)
