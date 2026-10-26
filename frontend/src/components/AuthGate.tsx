@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { setUnauthorizedHandler } from '../api/client'
 import { fetchCurrentUser, logout, ROLE_LABELS, type User } from '../api/session'
 import { CurrentUserContext } from '../auth/CurrentUserContext'
@@ -44,6 +45,10 @@ export function AuthGate({ children }: Props) {
   return (
     <CurrentUserContext.Provider value={user}>
       <header className="app-header">
+        <nav>
+          <Link to="/">チケット一覧</Link>
+          <Link to="/dashboard">ダッシュボード</Link>
+        </nav>
         <span className="user">
           <span>{user.name}</span>
           <span className="role">{ROLE_LABELS[user.role]}</span>
