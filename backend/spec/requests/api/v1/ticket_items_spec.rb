@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "GET /api/v1/tickets/:id", type: :request do
+  before { sign_in }
+
   it "チケットと、その項目を古い順に返す" do
     ticket = Ticket.create!(title: "要件の確認")
     ticket.items.create!(kind: "unknown", body: "締め切りはいつか", created_at: 1.hour.ago)
@@ -25,6 +27,8 @@ RSpec.describe "GET /api/v1/tickets/:id", type: :request do
 end
 
 RSpec.describe "POST /api/v1/tickets/:ticket_id/items", type: :request do
+  before { sign_in }
+
   let(:ticket) { Ticket.create!(title: "要件の確認") }
 
   it "項目を追加できる" do

@@ -1,6 +1,8 @@
 module Api
   module V1
     class TicketsController < ApplicationController
+      before_action :require_reviewer, only: [:approve, :send_back]
+
       def index
         tickets = Ticket.with_unknown_count.order(created_at: :desc)
         tickets = tickets.where(status: params[:status].to_s) if params[:status].present?

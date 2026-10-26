@@ -7,3 +7,17 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+# 開発用のアカウント（アカウントを作る画面はないので、ここかRailsのコンソールで作る）
+if Rails.env.development?
+  [
+    { name: "担当者", email: "member@example.com", role: "member" },
+    { name: "レビュアー", email: "reviewer@example.com", role: "reviewer" }
+  ].each do |attributes|
+    User.find_or_create_by!(email: attributes[:email]) do |user|
+      user.name = attributes[:name]
+      user.role = attributes[:role]
+      user.password = "password123"
+    end
+  end
+end

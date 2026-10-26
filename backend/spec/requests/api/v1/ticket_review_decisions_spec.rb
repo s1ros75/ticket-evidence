@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "POST /api/v1/tickets/:id/approve", type: :request do
+  before { sign_in(create_user(role: "reviewer")) }
+
   it "レビュー中のチケットを完了にして返す" do
     ticket = Ticket.create!(title: "要件の確認", status: "in_review")
 
@@ -20,6 +22,8 @@ RSpec.describe "POST /api/v1/tickets/:id/approve", type: :request do
 end
 
 RSpec.describe "POST /api/v1/tickets/:id/send_back", type: :request do
+  before { sign_in(create_user(role: "reviewer")) }
+
   let(:ticket) { Ticket.create!(title: "要件の確認", status: "in_review") }
 
   it "調査中に戻したチケットを、追加した不明点も含めて返す" do
@@ -40,3 +44,24 @@ RSpec.describe "POST /api/v1/tickets/:id/send_back", type: :request do
     expect(ticket.reload.status).to eq "in_review"
   end
 end
+
+RSpec.describe "レビューの操作の権限", type: :request do
+  let(:ticket) { Ticket.create!(title: "要件の確認", status: "in_review") }
+
+  before { sign_in(create_user(role: "member")) }
+
+  it "担当者は完了にできず、403を返す" do
+    post "/api/v1/tickets/#{ticket.id}/approve", as: :json
+
+    expect(response).to have_http_status(403)
+    expect(ticket.reload.status).to eq "in_review"
+  end
+
+  it "担当者は差し戻せず、403を返す" do
+    post "/api/v1/tickets/#{ticket.id}/send_back", params: { reason: "理由" }, as: :json
+
+    expect(response).to have_http_status(403)
+    expect(ticket.reload.status).to eq "in_review"
+  end
+end
+
