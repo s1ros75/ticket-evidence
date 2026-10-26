@@ -42,4 +42,18 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
     titles = JSON.parse(response.body).map { |ticket| ticket["title"] }
     expect(titles).to eq ["完了したチケット"]
   end
+
+  it "チケットごとに、残っている不明点の数を返す" do
+    with_unknowns = Ticket.create!(title: "不明点があるチケット")
+    with_unknowns.items.create!(kind: "unknown", body: "締め切りはいつか")
+    with_unknowns.items.create!(kind: "unknown", body: "支払い方法は何があるか")
+    with_unknowns.items.create!(kind: "confirmed", body: "対象はWeb版のみ")
+    with_unknowns.items.create!(kind: "assumption", body: "既存の会員情報を使う")
+    Ticket.create!(title: "不明点がないチケット", created_at: 1.day.ago)
+
+    get "/api/v1/tickets"
+
+    counts = JSON.parse(response.body).to_h { |ticket| [ticket["title"], ticket["unknown_count"]] }
+    expect(counts).to eq("不明点があるチケット" => 2, "不明点がないチケット" => 0)
+  end
 end
