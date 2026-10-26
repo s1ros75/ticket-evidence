@@ -55,6 +55,12 @@ export type TicketItemInput = {
   body: string
 }
 
+export const TICKET_STATUSES: TicketStatus[] = ['investigating', 'in_review', 'done']
+
+export function isTicketStatus(value: string | null): value is TicketStatus {
+  return TICKET_STATUSES.includes(value as TicketStatus)
+}
+
 export const STATUS_LABELS: Record<TicketStatus, string> = {
   investigating: '調査中',
   in_review: 'レビュー中',
@@ -84,10 +90,11 @@ export class NotFoundError extends Error {}
 
 const TICKETS_URL = '/api/v1/tickets'
 
-export async function fetchTickets(): Promise<TicketSummary[]> {
-  const response = await fetch(TICKETS_URL)
+export async function fetchTickets(status?: TicketStatus): Promise<TicketSummary[]> {
+  const url = status ? `${TICKETS_URL}?${new URLSearchParams({ status })}` : TICKETS_URL
+  const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`GET ${TICKETS_URL} failed: ${response.status}`)
+    throw new Error(`GET ${url} failed: ${response.status}`)
   }
   return response.json()
 }

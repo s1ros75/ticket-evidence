@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from './App'
 
@@ -38,7 +38,7 @@ describe('チケット一覧', () => {
     renderApp()
 
     expect(await screen.findByText('既存のチケット')).toBeInTheDocument()
-    expect(screen.getByText('調査中')).toBeInTheDocument()
+    expect(within(screen.getByRole('listitem')).getByText('調査中')).toBeInTheDocument()
     expect(fetch).toHaveBeenCalledWith('/api/v1/tickets')
   })
 
@@ -159,6 +159,65 @@ describe('一覧の不明点の残数', () => {
     fireEvent.click(screen.getByRole('button', { name: '作成' }))
 
     expect(await screen.findByRole('listitem')).toHaveTextContent('不明点なし')
+  })
+})
+
+describe('一覧の絞り込み', () => {
+  it('ステータスを選ぶと、そのステータスで絞り込んだ一覧を取得する', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse([existingTicket]))
+      .mockResolvedValueOnce(jsonResponse([{ ...existingTicket, id: 2, title: '完了したチケット', status: 'done' }]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp()
+    await screen.findByText('既存のチケット')
+
+    fireEvent.change(screen.getByLabelText('ステータス'), { target: { value: 'done' } })
+
+    expect(await screen.findByText('完了したチケット')).toBeInTheDocument()
+    expect(screen.queryByText('既存のチケット')).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets?status=done')
+  })
+
+  it('URLで指定したステータスで、最初から絞り込む', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])))
+
+    renderApp('/?status=in_review')
+
+    await screen.findByText('チケットはまだありません')
+    expect(fetch).toHaveBeenCalledWith('/api/v1/tickets?status=in_review')
+    expect(screen.getByLabelText('ステータス')).toHaveValue('in_review')
+  })
+
+  it('知らないステータスがURLにあれば、絞り込まずに取得する', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])))
+
+    renderApp('/?status=unknown')
+
+    await screen.findByText('チケットはまだありません')
+    expect(fetch).toHaveBeenCalledWith('/api/v1/tickets')
+    expect(screen.getByLabelText('ステータス')).toHaveValue('')
+  })
+
+  it('完了で絞り込んでいるときに作成したチケットは、一覧に足さない', async () => {
+    const created = { ...existingTicket, id: 2, title: '新しいチケット' }
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(jsonResponse(created, 201)),
+    )
+
+    renderApp('/?status=done')
+    await screen.findByText('チケットはまだありません')
+
+    fireEvent.change(screen.getByLabelText('タイトル'), { target: { value: '新しいチケット' } })
+    fireEvent.click(screen.getByRole('button', { name: '作成' }))
+
+    await waitFor(() => expect(screen.getByLabelText('タイトル')).toHaveValue(''))
+    expect(screen.queryByText('新しいチケット')).not.toBeInTheDocument()
   })
 })
 
