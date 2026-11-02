@@ -46,7 +46,7 @@ export function AuthGate({ children }: Props) {
     <CurrentUserContext.Provider value={user}>
       {import.meta.env.VITE_DEMO_MODE === '1' && (
         <p role="note" className="demo-banner">
-          デモ環境です。データは毎日リセットされます。パスワード変更と仮パスワードの発行は使えません。
+          デモ環境です。データはしばらく使われないとリセットされます。パスワード変更と仮パスワードの発行は使えません。
         </p>
       )}
       <header className="app-header">
