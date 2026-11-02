@@ -50,5 +50,5 @@ RUN mkdir -p log tmp/pids tmp/cache && \
 USER rails
 
 EXPOSE 3000
-# 起動のたびに、マイグレーションと（SEED_DEMO=1 のとき）デモのアカウントの用意をしてから起動する
-CMD ["sh", "-c", "bin/rails db:prepare && bin/rails db:seed && exec bin/rails server -b 0.0.0.0 -p ${PORT:-3000}"]
+# マイグレーションと、デモのデータの用意をしてから起動する（backend/bin/start）
+CMD ["bin/start"]

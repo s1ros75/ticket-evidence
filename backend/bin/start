@@ -1,0 +1,15 @@
+#!/bin/sh
+# 本番用イメージ（Dockerfile.production）の起動手順
+set -e
+
+bin/rails db:prepare
+
+if [ "$DEMO_MODE" = "1" ]; then
+  # 公開するデモは、起動のたびにデータを作り直す
+  # 無料のサービスは使われないと止まり、次に開かれたときに起動し直すので、そのたびにリセットされる
+  bin/rails demo:reset
+else
+  bin/rails db:seed
+fi
+
+exec bin/rails server -b 0.0.0.0 -p "${PORT:-3000}"
