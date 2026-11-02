@@ -762,3 +762,13 @@ main.login {
     border: none;
   }
 }
+
+/* ---------- デモ環境の表示 ---------- */
+
+.demo-banner {
+  padding: 8px 24px;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-size: 13px;
+  text-align: center;
+}

@@ -147,5 +147,24 @@ describe('ログイン', () => {
     expect(await screen.findByRole('link', { name: 'パスワード変更' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'アカウント管理' })).not.toBeInTheDocument()
   })
+
+  it('デモ環境では、その旨を画面の上に表示する', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', '1')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+
+    renderGate()
+
+    expect(await screen.findByRole('note')).toHaveTextContent('デモ環境です')
+    vi.unstubAllEnvs()
+  })
+
+  it('デモ環境でなければ、表示しない', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+
+    renderGate()
+
+    await screen.findByText('チケットはまだありません')
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+  })
 })
 

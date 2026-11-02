@@ -71,4 +71,22 @@ describe('パスワード変更', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Password challenge is invalid')
   })
+
+  it('デモ環境で断られたら、その理由を表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ errors: ['デモ環境では使えません'] }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ),
+    )
+
+    renderPassword()
+    fill('old-long-password', 'new-long-password', 'new-long-password')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('デモ環境では使えません')
+  })
 })
+

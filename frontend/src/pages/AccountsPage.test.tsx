@@ -115,4 +115,21 @@ describe('アカウント管理', () => {
     expect(await screen.findByText('アカウント管理は管理者だけが使えます')).toBeInTheDocument()
     expect(fetch).not.toHaveBeenCalled()
   })
+
+  it('仮パスワードの発行を断られたら、APIが返した理由を表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse([admin, member]))
+        .mockResolvedValueOnce(jsonResponse({ errors: ['デモ環境では使えません'] }, 403)),
+    )
+
+    renderAccounts()
+    const rows = await screen.findAllByRole('row')
+    fireEvent.click(within(rows[2]).getByRole('button', { name: '佐藤 の仮パスワードを発行' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('デモ環境では使えません')
+  })
 })
+

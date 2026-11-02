@@ -1,4 +1,4 @@
-// 422のときに、APIが返したエラーメッセージを画面に渡すための例外
+// 422・403のときに、APIが返したエラーメッセージを画面に渡すための例外
 export class ValidationError extends Error {
   messages: string[]
 
@@ -27,7 +27,7 @@ async function handleErrors(response: Response, label: string) {
   if (response.status === 404) {
     throw new NotFoundError()
   }
-  if (response.status === 422) {
+  if (response.status === 422 || response.status === 403) {
     const body: { errors: string[] } = await response.json()
     throw new ValidationError(body.errors)
   }

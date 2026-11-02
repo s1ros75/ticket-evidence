@@ -56,8 +56,8 @@ function Accounts() {
     try {
       const { temporary_password } = await resetPassword(user.id)
       setIssued({ name: user.name, password: temporary_password })
-    } catch {
-      setErrors(['仮パスワードを発行できませんでした'])
+    } catch (error) {
+      setErrors(error instanceof ValidationError ? error.messages : ['仮パスワードを発行できませんでした'])
     }
   }
 
