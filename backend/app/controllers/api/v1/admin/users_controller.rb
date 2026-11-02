@@ -5,6 +5,7 @@ module Api
       # 仮パスワードはサーバーで作り、応答で1回だけ返す（DBにはハッシュしか残らない）
       class UsersController < ApplicationController
         before_action :require_admin
+        before_action :forbid_in_demo, only: :reset_password
 
         def index
           render json: User.order(:id)

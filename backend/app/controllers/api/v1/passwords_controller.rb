@@ -2,6 +2,8 @@ module Api
   module V1
     # 自分のパスワードを変える
     class PasswordsController < ApplicationController
+      before_action :forbid_in_demo
+
       def update
         user = current_user
         # password_challenge で、今のパスワードが合っているかを has_secure_password に確かめさせる

@@ -32,4 +32,8 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  # 画面のURL（/tickets/1 など）は、ビルドした画面を返す。API と /up は対象外
+  get "*path", to: "frontend#index", format: false,
+               constraints: ->(request) { !request.path.start_with?("/api/", "/up") }
 end

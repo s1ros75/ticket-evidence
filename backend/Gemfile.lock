@@ -137,6 +137,8 @@ GEM
     net-smtp (0.5.2)
       net-protocol
     nio4r (2.7.5)
+    nokogiri (1.19.4-aarch64-linux-gnu)
+      racc (~> 1.4)
     nokogiri (1.19.4-aarch64-linux-musl)
       racc (~> 1.4)
     nokogiri (1.19.4-x86_64-linux-gnu)
@@ -145,6 +147,7 @@ GEM
     parser (3.3.12.0)
       ast (~> 2.4.1)
       racc
+    pg (1.6.3-aarch64-linux)
     pg (1.6.3-aarch64-linux-musl)
     pg (1.6.3-x86_64-linux)
     pp (0.6.4)
@@ -270,6 +273,7 @@ GEM
     zeitwerk (2.8.3)
 
 PLATFORMS
+  aarch64-linux
   aarch64-linux-musl
   x86_64-linux
 

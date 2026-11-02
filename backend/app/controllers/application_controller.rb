@@ -41,6 +41,10 @@ class ApplicationController < ActionController::API
     render json: { errors: ["ログインしてください"] }, status: :unauthorized unless current_user
   end
 
+  def forbid_in_demo
+    render json: { errors: ["デモ環境では使えません"] }, status: :forbidden if Rails.application.config.x.demo_mode
+  end
+
   def require_reviewer
     render json: { errors: ["レビュアーだけが行えます"] }, status: :forbidden unless current_user.reviewer?
   end
