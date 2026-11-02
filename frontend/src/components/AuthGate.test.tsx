@@ -87,10 +87,12 @@ describe('ログイン', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     renderGate()
-    fireEvent.click(await screen.findByRole('button', { name: 'ログアウト' }))
+    // 一覧の読み込みが終わってから押し、呼び出しの順番に左右されないようにする
+    await screen.findByText('チケットはまだありません')
+    fireEvent.click(screen.getByRole('button', { name: 'ログアウト' }))
 
     expect(await screen.findByLabelText('パスワード')).toBeInTheDocument()
-    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/session', {
+    expect(fetchMock).toHaveBeenCalledWith('/api/v1/session', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     })
