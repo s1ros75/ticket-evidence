@@ -72,7 +72,7 @@ function Accounts() {
         </div>
       )}
 
-      <section>
+      <section className="card">
         <h2>アカウントを作成</h2>
         <form className="ticket-form" onSubmit={handleCreate}>
           {errors.length > 0 && (
@@ -121,7 +121,7 @@ function Accounts() {
         </form>
       </section>
 
-      <section>
+      <section className="card">
         <h2>アカウント一覧</h2>
         {loadError ? (
           <p role="alert">アカウントを取得できませんでした</p>

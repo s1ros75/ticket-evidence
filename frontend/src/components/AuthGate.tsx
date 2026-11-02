@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, NavLink } from 'react-router'
 import { setUnauthorizedHandler } from '../api/client'
 import { fetchCurrentUser, logout, ROLE_LABELS, type User } from '../api/session'
 import { CurrentUserContext } from '../auth/CurrentUserContext'
@@ -45,19 +45,31 @@ export function AuthGate({ children }: Props) {
   return (
     <CurrentUserContext.Provider value={user}>
       <header className="app-header">
-        <nav>
-          <Link to="/">チケット一覧</Link>
-          <Link to="/dashboard">ダッシュボード</Link>
-          {user.admin && <Link to="/admin/users">アカウント管理</Link>}
-        </nav>
-        <span className="user">
-          <span>{user.name}</span>
-          <span className="role">{ROLE_LABELS[user.role]}</span>
-        </span>
-        <Link to="/password">パスワード変更</Link>
-        <button type="button" className="secondary" onClick={handleLogout}>
-          ログアウト
-        </button>
+        <div className="app-header-inner">
+          <Link to="/" className="brand">
+            Ticket Evidence
+          </Link>
+          <nav aria-label="メイン" className="main-nav">
+            <NavLink to="/" end>
+              チケット一覧
+            </NavLink>
+            <NavLink to="/dashboard">ダッシュボード</NavLink>
+            {user.admin && <NavLink to="/admin/users">アカウント管理</NavLink>}
+          </nav>
+          <div className="account">
+            <span className="avatar" aria-hidden="true">
+              {user.name.slice(0, 1)}
+            </span>
+            <span className="user">
+              <span>{user.name}</span>
+              <span className="role">{ROLE_LABELS[user.role]}</span>
+            </span>
+            <Link to="/password">パスワード変更</Link>
+            <button type="button" className="text" onClick={handleLogout}>
+              ログアウト
+            </button>
+          </div>
+        </div>
       </header>
       {children}
     </CurrentUserContext.Provider>

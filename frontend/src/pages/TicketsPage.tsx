@@ -46,12 +46,12 @@ export function TicketsPage() {
     <main>
       <h1>チケット</h1>
 
-      <section>
+      <section className="card">
         <h2>新規作成</h2>
         <TicketForm onCreated={handleCreated} />
       </section>
 
-      <section>
+      <section className="card">
         <h2>一覧</h2>
         <StatusFilter value={status} onChange={handleStatusChange} />
         {loadError ? (

@@ -27,37 +27,40 @@ export function LoginPage({ onLoggedIn }: Props) {
 
   return (
     <main className="login">
-      <h1>ログイン</h1>
-      <form className="ticket-form" onSubmit={handleSubmit}>
-        {errors.length > 0 && (
-          <ul role="alert" className="errors">
-            {errors.map((message) => (
-              <li key={message}>{message}</li>
-            ))}
-          </ul>
-        )}
-        <label>
-          メールアドレス
-          <input
-            type="email"
-            autoComplete="username"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </label>
-        <label>
-          パスワード
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </label>
-        <button type="submit" disabled={submitting}>
-          ログイン
-        </button>
-      </form>
+      <div className="login-card">
+        <p className="brand">Ticket Evidence</p>
+        <h1>ログイン</h1>
+        <form className="ticket-form" onSubmit={handleSubmit}>
+          {errors.length > 0 && (
+            <ul role="alert" className="errors">
+              {errors.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          )}
+          <label>
+            メールアドレス
+            <input
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          <label>
+            パスワード
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={submitting}>
+            ログイン
+          </button>
+        </form>
+      </div>
     </main>
   )
 }

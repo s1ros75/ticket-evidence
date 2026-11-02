@@ -64,7 +64,7 @@ export function TicketHistory({ ticketId, refreshKey }: Props) {
   }
 
   return (
-    <section aria-labelledby="history-heading" className="history">
+    <section aria-labelledby="history-heading" className="card history">
       <h2 id="history-heading">変更履歴</h2>
       {loadError ? (
         <p role="alert">変更履歴を取得できませんでした</p>

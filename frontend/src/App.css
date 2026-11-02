@@ -1,74 +1,402 @@
+/* 色・余白・角丸の値は index.css の決まりごと（トークン）だけを使う */
+
+/* ---------- レイアウト ---------- */
+
 main {
   width: 100%;
-  max-width: 720px;
+  max-width: 880px;
   margin: 0 auto;
-  padding: 32px 16px;
-  box-sizing: border-box;
-  text-align: left;
+  padding: 24px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-h1,
-h2 {
-  color: var(--text-h);
+main.narrow {
+  max-width: 480px;
 }
 
-section + section {
-  margin-top: 32px;
-}
-
-.ticket-form {
+.card {
+  padding: 20px 24px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.ticket-form label {
+@media (max-width: 560px) {
+  .card {
+    padding: 16px;
+  }
+}
+
+.page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.back {
+  font-size: 14px;
+}
+
+.description {
+  color: var(--on-surface-variant);
+  white-space: pre-wrap;
+}
+
+.empty,
+.waiting,
+.hint {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+}
+
+/* ---------- ヘッダー ---------- */
+
+.app-header {
+  border-bottom: 1px solid var(--outline-variant);
+  background: var(--surface);
+}
+
+.app-header-inner {
+  padding: 8px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+a.brand:hover {
+  text-decoration: none;
+}
+
+.main-nav {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.main-nav a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.main-nav a:hover {
+  background: var(--surface-container);
+  text-decoration: none;
+}
+
+.main-nav a.active {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 500;
+}
+
+.user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role,
+.badge {
+  font-size: 12px;
+  padding: 0 8px;
+  line-height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+}
+
+.badge {
+  margin-left: 8px;
+}
+
+@media (max-width: 720px) {
+  .app-header-inner {
+    padding: 8px 16px;
+  }
+
+  .main-nav {
+    order: 3;
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .main-nav a {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .account {
+    margin-left: auto;
+  }
+
+  .account .user > span:first-child {
+    display: none;
+  }
+}
+
+/* ---------- ボタン（主な操作・ふつうの操作・取り消しの3種類） ---------- */
+
+button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--primary);
+  color: var(--on-primary);
+  cursor: pointer;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+button:hover {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px 1px rgb(0 0 0 / 0.15);
+}
+
+button:disabled {
+  background: var(--surface-container-high);
+  color: var(--outline);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: transparent;
+  border-color: var(--outline);
+  color: var(--primary);
+}
+
+button.text {
+  background: transparent;
+  color: var(--primary);
+  padding-inline: 12px;
+}
+
+button.secondary:hover,
+button.text:hover {
+  background: var(--surface-container);
+  box-shadow: none;
+}
+
+button.secondary:disabled,
+button.text:disabled {
+  background: transparent;
+  border-color: var(--outline-variant);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- 入力欄 ---------- */
+
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ticket-form label,
+.status-filter {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  font-size: 14px;
+  color: var(--on-surface-variant);
 }
 
-.ticket-form input,
-.ticket-form textarea {
+input,
+textarea,
+select {
   font: inherit;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text-h);
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--on-surface);
 }
 
-.ticket-form textarea {
-  min-height: 80px;
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
-.ticket-form button {
+textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+select {
   align-self: flex-start;
-  font: inherit;
-  padding: 8px 20px;
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  background: var(--accent-bg);
-  color: var(--text-h);
-  cursor: pointer;
+  min-width: 160px;
 }
 
-.ticket-form button:disabled {
-  opacity: 0.5;
-  cursor: default;
+.ticket-form label.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: var(--on-surface);
+}
+
+.ticket-form label.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+/* ---------- お知らせ・エラー ---------- */
+
+.errors,
+p[role='alert'] {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--error-container);
+  color: var(--on-error-container);
+  font-size: 14px;
 }
 
 .errors {
-  margin: 0;
-  padding: 8px 8px 8px 28px;
-  border-radius: 6px;
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  padding-left: 32px;
+}
+
+.notice {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-size: 14px;
+}
+
+.notice p + p {
+  margin-top: 4px;
+}
+
+.notice code {
+  font-size: 16px;
+  user-select: all;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- チップ（ステータス） ---------- */
+
+.status {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status-investigating {
+  background: var(--surface-container-high);
+  color: var(--on-surface-variant);
+}
+
+.status-in_review {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.status-done {
+  background: var(--confirmed-container);
+  color: var(--on-confirmed-container);
+}
+
+/* ---------- 種別の色（不明点・仮定・確認済み） ---------- */
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
+.dot-unknown {
+  background: var(--unknown);
+}
+
+.dot-assumption {
+  background: var(--assumption);
+}
+
+.dot-confirmed {
+  background: var(--confirmed);
+}
+
+/* ---------- チケット一覧 ---------- */
+
+.status-filter {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-filter select {
+  padding: 6px 12px;
+  min-width: 120px;
 }
 
 .ticket-list {
   list-style: none;
-  margin: 0;
+  margin: 0 -24px;
   padding: 0;
 }
 
@@ -76,97 +404,73 @@ section + section {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  border-top: 1px solid var(--outline-variant);
 }
 
-.ticket-list .title {
-  color: var(--text-h);
-}
-
-.status {
-  flex-shrink: 0;
-  font-size: 0.8em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-}
-
-.status-investigating {
-  background: rgba(234, 179, 8, 0.15);
-}
-
-.status-in_review {
-  background: rgba(59, 130, 246, 0.15);
-}
-
-.status-done {
-  background: rgba(34, 197, 94, 0.15);
+.ticket-list li:hover {
+  background: var(--surface-container-low);
 }
 
 .ticket-list a.title {
-  color: var(--text-h);
+  flex: 1;
+  min-width: 0;
+  color: var(--on-surface);
+  font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
-.description {
-  white-space: pre-wrap;
+.unknown-count {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--unknown-container);
+  color: var(--on-unknown-container);
 }
+
+.unknown-count.none {
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-weight: 400;
+}
+
+@media (max-width: 560px) {
+  .ticket-list {
+    margin: 0 -16px;
+  }
+
+  .ticket-list li {
+    padding: 12px 16px;
+  }
+}
+
+/* ---------- チケット詳細 ---------- */
 
 .items {
-  margin-top: 24px;
-  padding: 4px 16px 12px;
-  border: 1px solid var(--border);
-  border-left-width: 4px;
-  border-radius: 6px;
-}
-
-.items-unknown {
-  border-left-color: #dc2626;
-}
-
-.items-assumption {
-  border-left-color: #eab308;
-}
-
-.items-confirmed {
-  border-left-color: #22c55e;
-}
-
-.items ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.items li {
-  white-space: pre-wrap;
-}
-
-.items .empty {
-  margin: 0;
-  opacity: 0.7;
-}
-
-.ticket-form select {
-  font: inherit;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text-h);
-  align-self: flex-start;
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: var(--surface-container-low);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .items > ul {
   list-style: none;
-  padding-left: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .item {
-  padding: 8px 0;
+  padding: 12px 0;
 }
 
 .item + .item {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--outline-variant);
 }
 
 .item-row {
@@ -177,31 +481,44 @@ section + section {
 }
 
 .item-row .body {
-  color: var(--text-h);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-button.secondary {
-  flex-shrink: 0;
-  font: inherit;
-  font-size: 0.85em;
-  padding: 4px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-h);
-  cursor: pointer;
+.item-row button.secondary {
+  padding: 6px 16px;
 }
 
 .resolved-at {
-  margin: 4px 0 0;
-  font-size: 0.85em;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--on-surface-variant);
 }
 
 .evidences {
+  list-style: none;
   margin: 4px 0 0;
-  padding-left: 20px;
-  font-size: 0.9em;
+  padding: 0;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+}
+
+.evidences li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+
+.evidences li::before {
+  content: '根拠';
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 20px;
+  margin-top: 1px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--confirmed-container);
+  color: var(--on-confirmed-container);
 }
 
 .evidences a {
@@ -209,133 +526,35 @@ button.secondary {
 }
 
 .evidences .memo {
-  margin: 0;
   white-space: pre-wrap;
 }
 
 .resolve-form {
-  margin-top: 8px;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface);
 }
 
-.resolve-form .actions {
-  display: flex;
-  gap: 8px;
-}
-
-.review-request {
-  margin-top: 16px;
+.review-request,
+.review-decision {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .review-request .blocked {
-  margin: 0;
-  font-size: 0.9em;
-  color: #dc2626;
+  color: var(--on-unknown-container);
+  font-size: 14px;
 }
 
-button.primary {
-  align-self: flex-start;
-  font: inherit;
-  padding: 8px 20px;
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  background: var(--accent-bg);
-  color: var(--text-h);
-  cursor: pointer;
+@media (max-width: 560px) {
+  .items {
+    padding: 16px;
+  }
 }
 
-button.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.unknown-count {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 0.8em;
-  color: #dc2626;
-}
-
-.unknown-count.none {
-  color: var(--text);
-  opacity: 0.7;
-}
-
-.status-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.status-filter select {
-  font: inherit;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text-h);
-}
-
-.review-decision {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.review-decision .actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.review-decision button.secondary {
-  font-size: 1em;
-  padding: 8px 20px;
-}
-
-.app-header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 12px 16px 0;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.app-header .user {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-h);
-}
-
-.app-header .role {
-  font-size: 0.8em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-}
-
-.login {
-  max-width: 400px;
-}
-
-.waiting {
-  margin-top: 16px;
-  font-size: 0.9em;
-}
-
-.history-toggle {
-  margin-top: 32px;
-}
+/* ---------- 変更履歴 ---------- */
 
 .history ul {
   list-style: none;
@@ -347,22 +566,24 @@ button.primary:disabled {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 4px 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9em;
+  padding: 10px 0;
+  border-top: 1px solid var(--outline-variant);
+  font-size: 14px;
 }
 
 .history .who {
-  color: var(--text-h);
+  font-weight: 500;
 }
 
 .history .what {
+  color: var(--on-surface-variant);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .history time {
-  opacity: 0.7;
+  color: var(--on-surface-variant);
+  font-size: 13px;
 }
 
 @media (max-width: 560px) {
@@ -375,11 +596,7 @@ button.primary:disabled {
   }
 }
 
-.app-header nav {
-  display: flex;
-  gap: 16px;
-  margin-right: auto;
-}
+/* ---------- ダッシュボード ---------- */
 
 .stat-tiles {
   list-style: none;
@@ -396,55 +613,60 @@ button.primary:disabled {
   }
 }
 
-/* 数字と見出しは本文の文字色にし、ステータスは左端の色と見出しの両方で示す */
+/* 数字と見出しは本文の文字色にし、ステータスは見出しの文字と丸印の両方で示す */
 .stat-tile {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-left-width: 4px;
-  border-radius: 6px;
-  color: var(--text);
+  padding: 16px 20px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  color: var(--on-surface-variant);
+}
+
+a.stat-tile:hover {
+  background: var(--surface-container-low);
   text-decoration: none;
 }
 
-.stat-tile:hover {
-  background: var(--accent-bg);
+.stat-tile .stat-label::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: var(--outline);
 }
 
-.stat-tile-investigating {
-  border-left-color: #eab308;
+.stat-tile-in_review .stat-label::before {
+  background: var(--primary);
 }
 
-.stat-tile-in_review {
-  border-left-color: #3b82f6;
+.stat-tile-done .stat-label::before {
+  background: var(--confirmed);
 }
 
-.stat-tile-done {
-  border-left-color: #22c55e;
-}
-
-.stat-tile-blocked {
-  border-left-color: #dc2626;
+.stat-tile-blocked .stat-label::before {
+  background: var(--unknown);
 }
 
 .stat-label {
-  font-size: 0.9em;
+  font-size: 14px;
 }
 
 .stat-value {
-  color: var(--text-h);
+  color: var(--on-surface);
 }
 
 .stat-value strong {
-  font-size: 2em;
+  font-size: 32px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
-  margin-right: 2px;
+  margin-right: 4px;
 }
 
 .stat-note {
-  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -452,77 +674,38 @@ button.primary:disabled {
 }
 
 .stat-hint {
-  font-size: 0.85em;
+  font-size: 14px;
+  color: var(--on-surface-variant);
 }
 
-.notice {
-  padding: 12px 16px;
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  background: var(--accent-bg);
-  color: var(--text-h);
-}
-
-.notice p {
-  margin: 0;
-}
-
-.notice p + p {
-  margin-top: 4px;
-  font-size: 0.9em;
-}
-
-.notice code {
-  font-family: var(--mono);
-  font-size: 1.1em;
-  user-select: all;
-}
-
-.ticket-form label.checkbox {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-
-.hint {
-  margin: 0;
-  font-size: 0.85em;
-}
+/* ---------- アカウント管理 ---------- */
 
 .accounts {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9em;
+  font-size: 14px;
 }
 
 .accounts th,
 .accounts td {
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  border-top: 1px solid var(--outline-variant);
   text-align: left;
   overflow-wrap: anywhere;
 }
 
 .accounts th {
-  color: var(--text-h);
-  font-weight: 600;
+  border-top: none;
+  color: var(--on-surface-variant);
+  font-weight: 500;
 }
 
-.badge {
-  margin-left: 8px;
-  font-size: 0.8em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+.accounts td:last-child {
+  text-align: right;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
+.accounts button.secondary {
+  padding: 6px 16px;
 }
 
 @media (max-width: 560px) {
@@ -533,11 +716,49 @@ button.primary:disabled {
   .accounts tr {
     display: grid;
     padding: 8px 0;
-    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--outline-variant);
   }
 
   .accounts td {
     padding: 2px 0;
-    border-bottom: none;
+    border-top: none;
+    text-align: left;
+  }
+
+  .accounts td:last-child {
+    text-align: left;
+    padding-top: 8px;
+  }
+}
+
+/* ---------- ログイン ---------- */
+
+main.login {
+  max-width: 448px;
+  min-height: 100svh;
+  justify-content: center;
+}
+
+.login-card {
+  padding: 40px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-card .brand {
+  color: var(--primary);
+}
+
+.login-card button[type='submit'] {
+  align-self: flex-end;
+}
+
+@media (max-width: 560px) {
+  .login-card {
+    padding: 24px;
+    border: none;
   }
 }

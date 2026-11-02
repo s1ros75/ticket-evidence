@@ -35,14 +35,14 @@ export function PasswordPage() {
   }
 
   return (
-    <main className="login">
+    <main className="narrow">
       <h1>パスワード変更</h1>
       {done && (
         <p role="status" className="notice">
           パスワードを変更しました。ほかの端末ではログインし直す必要があります。
         </p>
       )}
-      <form className="ticket-form" onSubmit={handleSubmit}>
+      <form className="ticket-form card" onSubmit={handleSubmit}>
         {errors.length > 0 && (
           <ul role="alert" className="errors">
             {errors.map((message) => (

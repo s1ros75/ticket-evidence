@@ -70,7 +70,7 @@ export function TicketDetailPage({ id }: Props) {
 
   return (
     <main>
-      <p>
+      <p className="back">
         <Link to="/">← 一覧へ戻る</Link>
       </p>
 
@@ -82,35 +82,21 @@ export function TicketDetailPage({ id }: Props) {
         <p>読み込み中…</p>
       ) : (
         <>
-          <h1>{ticket.title}</h1>
-          <p>
+          <div className="page-heading">
+            <h1>{ticket.title}</h1>
             <span className={`status status-${ticket.status}`}>{STATUS_LABELS[ticket.status]}</span>
-          </p>
+          </div>
           {ticket.description && <p className="description">{ticket.description}</p>}
-
-          {ticket.status === 'investigating' && (
-            <ReviewRequest
-              ticketId={ticket.id}
-              unknownCount={ticket.items.filter((item) => item.kind === 'unknown').length}
-              onRequested={handleReviewRequested}
-            />
-          )}
-
-          {ticket.status === 'in_review' &&
-            (currentUser.role !== 'reviewer' ? (
-              <p className="waiting">レビュアーの確認待ちです</p>
-            ) : ticket.review_requester?.id === currentUser.id ? (
-              <p className="waiting">あなたが依頼したため、別のレビュアーの確認待ちです</p>
-            ) : (
-              <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={handleSentBack} />
-            ))}
 
           {ITEM_KINDS.map((kind) => {
             const items = ticket.items.filter((item) => item.kind === kind)
             const headingId = `items-${kind}`
             return (
               <section key={kind} aria-labelledby={headingId} className={`items items-${kind}`}>
-                <h2 id={headingId}>{ITEM_KIND_LABELS[kind]}</h2>
+                <h2 id={headingId}>
+                  <span className={`dot dot-${kind}`} aria-hidden="true" />
+                  {ITEM_KIND_LABELS[kind]}
+                </h2>
                 {items.length === 0 ? (
                   <p className="empty">まだありません</p>
                 ) : (
@@ -124,7 +110,28 @@ export function TicketDetailPage({ id }: Props) {
             )
           })}
 
-          <section>
+          {(ticket.status === 'investigating' || ticket.status === 'in_review') && (
+            <section aria-label="レビュー" className="card review">
+              {ticket.status === 'investigating' && (
+                <ReviewRequest
+                  ticketId={ticket.id}
+                  unknownCount={ticket.items.filter((item) => item.kind === 'unknown').length}
+                  onRequested={handleReviewRequested}
+                />
+              )}
+
+              {ticket.status === 'in_review' &&
+                (currentUser.role !== 'reviewer' ? (
+                  <p className="waiting">レビュアーの確認待ちです</p>
+                ) : ticket.review_requester?.id === currentUser.id ? (
+                  <p className="waiting">あなたが依頼したため、別のレビュアーの確認待ちです</p>
+                ) : (
+                  <ReviewDecision ticketId={ticket.id} onApproved={handleStatusChanged} onSentBack={handleSentBack} />
+                ))}
+            </section>
+          )}
+
+          <section className="card">
             <h2>項目を追加</h2>
             <TicketItemForm ticketId={ticket.id} onCreated={handleItemCreated} />
           </section>

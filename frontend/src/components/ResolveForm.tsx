@@ -47,7 +47,7 @@ export function ResolveForm({ item, onResolved, onCancel }: Props) {
         <button type="submit" disabled={submitting}>
           根拠を付けて解決
         </button>
-        <button type="button" className="secondary" onClick={onCancel}>
+        <button type="button" className="text" onClick={onCancel}>
           やめる
         </button>
       </div>

@@ -58,7 +58,7 @@ export function ReviewDecision({ ticketId, onApproved, onSentBack }: Props) {
             <button type="submit" disabled={submitting}>
               理由を付けて差し戻す
             </button>
-            <button type="button" className="secondary" onClick={() => setSendingBack(false)}>
+            <button type="button" className="text" onClick={() => setSendingBack(false)}>
               やめる
             </button>
           </div>
