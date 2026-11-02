@@ -23,6 +23,6 @@ class User < ApplicationRecord
 
   # パスワードのハッシュなどを画面に返さないよう、出す項目を決めておく
   def as_json(options = {})
-    super({ only: %i[id name email role] }.merge(options))
+    super({ only: %i[id name email role admin] }.merge(options))
   end
 end

@@ -1,0 +1,21 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "5333e7565aa9b02d18ab1c645ccc7ae82e0f46c93966d6efe3ea9d610bf43e8d",
+      "check_name": "PermitAttributes",
+      "warning_type": "Mass Assignment",
+      "file": "app/controllers/api/v1/admin/users_controller.rb",
+      "code": "params.require(:user).permit(:name, :email, :role, :admin)",
+      "note": "管理者だけが使う Admin::UsersController。require_admin で管理者以外は403にしている（spec/requests/api/v1/admin/users_spec.rb で確認）。一般の利用者が role や admin を変えられる入口はない。"
+    },
+    {
+      "fingerprint": "78ae1bff296358aec2509ab40e85a04e21ede1231021a7422993c13b472d4d9e",
+      "check_name": "PermitAttributes",
+      "warning_type": "Mass Assignment",
+      "file": "app/controllers/api/v1/admin/users_controller.rb",
+      "code": "params.require(:user).permit(:name, :email, :role, :admin)",
+      "note": "管理者だけが使う Admin::UsersController。require_admin で管理者以外は403にしている（spec/requests/api/v1/admin/users_spec.rb で確認）。一般の利用者が role や admin を変えられる入口はない。"
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}

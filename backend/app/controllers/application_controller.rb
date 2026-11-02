@@ -26,6 +26,17 @@ class ApplicationController < ActionController::API
     @current_user_session = user_session
   end
 
+  # ログイン前のセッションを引き継がない（セッション固定攻撃への対策）
+  def start_new_session_for(user)
+    reset_session
+    user_session = user.user_sessions.create!(
+      ip_address: request.remote_ip,
+      user_agent: request.user_agent.to_s.first(255)
+    )
+    session[:user_session_id] = user_session.id
+    @current_user_session = user_session
+  end
+
   def require_login
     render json: { errors: ["ログインしてください"] }, status: :unauthorized unless current_user
   end

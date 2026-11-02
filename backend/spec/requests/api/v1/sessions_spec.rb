@@ -8,7 +8,7 @@ RSpec.describe "/api/v1/session", type: :request do
 
     expect(response).to have_http_status(200)
     body = JSON.parse(response.body)
-    expect(body).to include("name" => "担当者", "email" => "member@example.com", "role" => "member")
+    expect(body).to include("name" => "担当者", "email" => "member@example.com", "role" => "member", "admin" => false)
     expect(body).not_to have_key("password_digest")
   end
 

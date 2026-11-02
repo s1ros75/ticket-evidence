@@ -1,8 +1,8 @@
 module AuthHelpers
   PASSWORD = "correct-horse-battery".freeze
 
-  def create_user(role: "member", email: "#{role}@example.com", name: role == "reviewer" ? "レビュアー" : "担当者")
-    User.create!(name: name, email: email, password: PASSWORD, role: role)
+  def create_user(role: "member", email: "#{role}@example.com", name: role == "reviewer" ? "レビュアー" : "担当者", admin: false)
+    User.create!(name: name, email: email, password: PASSWORD, role: role, admin: admin)
   end
 
   # リクエストスペックで、Cookieのセッションにログインした状態を作る

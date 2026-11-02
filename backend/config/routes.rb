@@ -12,6 +12,13 @@ Rails.application.routes.draw do
     namespace :v1 do
       resource :session, only: [:show, :create, :destroy]
       resource :dashboard, only: [:show]
+      resource :password, only: [:update]
+
+      namespace :admin do
+        resources :users, only: [:index, :create] do
+          post :reset_password, on: :member
+        end
+      end
       resources :tickets, only: [:index, :show, :create] do
         member do
           post :request_review

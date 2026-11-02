@@ -12,11 +12,12 @@
 if Rails.env.development?
   [
     { name: "担当者", email: "member@example.com", role: "member" },
-    { name: "レビュアー", email: "reviewer@example.com", role: "reviewer" }
+    { name: "レビュアー", email: "reviewer@example.com", role: "reviewer", admin: true }
   ].each do |attributes|
     User.find_or_create_by!(email: attributes[:email]) do |user|
       user.name = attributes[:name]
       user.role = attributes[:role]
+      user.admin = attributes.fetch(:admin, false)
       user.password = "password1234"
     end
   end

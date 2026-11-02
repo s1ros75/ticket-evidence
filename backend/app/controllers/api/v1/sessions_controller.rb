@@ -22,13 +22,7 @@ module Api
         user = User.authenticate_by(email: params[:email].to_s, password: params[:password].to_s)
 
         if user
-          # ログイン前のセッションを引き継がない（セッション固定攻撃への対策）
-          reset_session
-          user_session = user.user_sessions.create!(
-            ip_address: request.remote_ip,
-            user_agent: request.user_agent.to_s.first(255)
-          )
-          session[:user_session_id] = user_session.id
+          start_new_session_for(user)
           render json: user
         else
           render json: { errors: ["メールアドレスかパスワードが違います"] }, status: :unauthorized
