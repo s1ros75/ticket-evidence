@@ -1,0 +1,18 @@
+# Dockerfile.production（リポジトリ直下から build する）用
+.git
+.github
+.history
+docs
+**/.DS_Store
+.env
+.env.*
+
+frontend/node_modules
+frontend/dist
+
+backend/log/*
+backend/tmp/*
+backend/storage/*
+backend/.bundle
+backend/vendor/bundle
+backend/config/*.key

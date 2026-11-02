@@ -54,6 +54,15 @@ Redmineでも、子チケットやカスタムフィールド、プラグイン�
 |---|---|---|
 | ![ダッシュボード](docs/images/dashboard.png) | ![ログイン](docs/images/login.png) | ![スマホの表示](docs/images/mobile.png) |
 
+## 公開
+
+[Render](https://render.com/) で公開する設定（[render.yaml](render.yaml)、[Dockerfile.production](Dockerfile.production)）を用意しています。画面とAPIは1つのサービスで配信します。
+
+公開するデモは、誰でもログインできる前提で次のようにしています。
+
+- データは毎日リセットされます（`bin/rails demo:reset` を Cron Job で実行）
+- パスワード変更と仮パスワードの発行は使えません（`DEMO_MODE=1`）
+
 ## 技術構成
 
 | | |
@@ -75,7 +84,7 @@ UIライブラリは使わず、Material Design 3 の考え方に寄せたCSSを
 - **ログインはCookieのセッションをDBに記録**：ログアウトやパスワード変更で、サーバー側からセッションを無効にできます（盗まれたCookieの使い回しを防ぐ）。期限は無操作2時間・最長12時間です。
 - **CSRF対策**：JSON以外の変更系リクエストを断り、CORSを許可しない構成で、ほかのサイトからの操作を防いでいます。CookieはSameSite=Lax・HttpOnlyです。
 - **ログイン試行の制限**：IPごとと、メールアドレスごとの両方で回数を制限しています。
-- **テストを先に書く**：機能はテストを先に書いて失敗を確かめてから実装する流れで作りました（RSpec 118件、Vitest 57件）。
+- **テストを先に書く**：機能はテストを先に書いて失敗を確かめてから実装する流れで作りました（RSpec 125件、Vitest 61件）。
 
 ## 動かし方
 
