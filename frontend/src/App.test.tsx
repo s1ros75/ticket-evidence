@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import App from './App'
 import { CurrentUserContext } from './auth/CurrentUserContext'
 
-const member = { id: 1, name: '担当者', email: 'member@example.com', role: 'member' } as const
+const member = { id: 1, name: '担当者', email: 'member@example.com', role: 'member', admin: false } as const
 
 function renderApp(path = '/') {
   return render(

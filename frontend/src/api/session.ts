@@ -1,4 +1,4 @@
-import { ValidationError } from './client'
+import { sendJson, ValidationError } from './client'
 
 export type UserRole = 'member' | 'reviewer'
 
@@ -7,6 +7,8 @@ export type User = {
   name: string
   email: string
   role: UserRole
+  // 管理者かどうか。ロールとは別の印で、アカウントの作成と仮パスワードの発行ができる
+  admin: boolean
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -53,4 +55,8 @@ export async function logout(): Promise<void> {
   if (!response.ok) {
     throw new Error(`DELETE ${SESSION_URL} failed: ${response.status}`)
   }
+}
+
+export function changePassword(currentPassword: string, password: string): Promise<void> {
+  return sendJson('PATCH', '/api/v1/password', { current_password: currentPassword, password })
 }

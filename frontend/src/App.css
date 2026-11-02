@@ -454,3 +454,90 @@ button.primary:disabled {
 .stat-hint {
   font-size: 0.85em;
 }
+
+.notice {
+  padding: 12px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.notice p {
+  margin: 0;
+}
+
+.notice p + p {
+  margin-top: 4px;
+  font-size: 0.9em;
+}
+
+.notice code {
+  font-family: var(--mono);
+  font-size: 1.1em;
+  user-select: all;
+}
+
+.ticket-form label.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.85em;
+}
+
+.accounts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.accounts th,
+.accounts td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.accounts th {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.badge {
+  margin-left: 8px;
+  font-size: 0.8em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .accounts thead {
+    display: none;
+  }
+
+  .accounts tr {
+    display: grid;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .accounts td {
+    padding: 2px 0;
+    border-bottom: none;
+  }
+}

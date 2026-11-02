@@ -12,8 +12,8 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
-const member: User = { id: 1, name: '担当者', email: 'member@example.com', role: 'member' }
-const reviewer: User = { id: 2, name: 'レビュアー', email: 'reviewer@example.com', role: 'reviewer' }
+const member: User = { id: 1, name: '担当者', email: 'member@example.com', role: 'member', admin: false }
+const reviewer: User = { id: 2, name: 'レビュアー', email: 'reviewer@example.com', role: 'reviewer', admin: false }
 
 function renderDetail(id = 1, user: User = member) {
   return render(

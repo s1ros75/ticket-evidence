@@ -11,7 +11,7 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
-const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member' }
+const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false }
 const unauthorized = () => jsonResponse({ errors: ['ログインしてください'] }, 401)
 
 function renderGate() {
@@ -120,6 +120,30 @@ describe('ログイン', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'ダッシュボード' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'チケット一覧' })).toHaveAttribute('href', '/')
+  })
+
+  it('管理者にだけ、アカウント管理へのリンクを出す', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ ...member, admin: true }))
+        .mockResolvedValueOnce(jsonResponse([])),
+    )
+
+    renderGate()
+
+    expect(await screen.findByRole('link', { name: 'アカウント管理' })).toHaveAttribute('href', '/admin/users')
+    expect(screen.getByRole('link', { name: 'パスワード変更' })).toHaveAttribute('href', '/password')
+  })
+
+  it('管理者でなければ、アカウント管理へのリンクを出さない', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+
+    renderGate()
+
+    expect(await screen.findByRole('link', { name: 'パスワード変更' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'アカウント管理' })).not.toBeInTheDocument()
   })
 })
 

@@ -48,11 +48,13 @@ export function AuthGate({ children }: Props) {
         <nav>
           <Link to="/">チケット一覧</Link>
           <Link to="/dashboard">ダッシュボード</Link>
+          {user.admin && <Link to="/admin/users">アカウント管理</Link>}
         </nav>
         <span className="user">
           <span>{user.name}</span>
           <span className="role">{ROLE_LABELS[user.role]}</span>
         </span>
+        <Link to="/password">パスワード変更</Link>
         <button type="button" className="secondary" onClick={handleLogout}>
           ログアウト
         </button>

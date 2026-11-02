@@ -42,12 +42,17 @@ export async function getJson<T>(url: string): Promise<T> {
   return response.json()
 }
 
-export async function postJson<T>(url: string, body: unknown): Promise<T> {
+// 本文を返さない応答（204）のときは undefined を返す
+export async function sendJson<T>(method: 'POST' | 'PATCH', url: string, body: unknown): Promise<T> {
   const response = await fetch(url, {
-    method: 'POST',
+    method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  await handleErrors(response, `POST ${url}`)
-  return response.json()
+  await handleErrors(response, `${method} ${url}`)
+  return response.status === 204 ? (undefined as T) : response.json()
+}
+
+export function postJson<T>(url: string, body: unknown): Promise<T> {
+  return sendJson('POST', url, body)
 }
