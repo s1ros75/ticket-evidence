@@ -1,0 +1,38 @@
+# 画面にそのまま出す検証エラーを日本語にする（このアプリで使う分だけ）
+ja:
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      blank: "を入力してください"
+      taken: "はすでに使われています"
+      too_short: "は%{count}文字以上で入力してください"
+      too_long: "は%{count}文字以内で入力してください"
+      password_too_long: "が長すぎます"
+      inclusion: "の値が正しくありません"
+      invalid: "が正しくありません"
+      confirmation: "が%{attribute}と一致しません"
+      required: "がありません"
+  activerecord:
+    attributes:
+      ticket:
+        title: "タイトル"
+        description: "概要"
+        status: "ステータス"
+      ticket_item:
+        kind: "種別"
+        body: "内容"
+        ticket: "チケット"
+      evidence:
+        url: "リンク"
+        memo: "メモ"
+        ticket_item: "項目"
+      user:
+        name: "名前"
+        email: "メールアドレス"
+        password: "パスワード"
+        password_challenge: "今のパスワード"
+        role: "ロール"
+        admin: "管理者"
+      ticket_event:
+        action: "操作"
+        user: "ユーザー"
