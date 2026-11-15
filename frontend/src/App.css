@@ -400,6 +400,15 @@ p[role='alert'] {
   padding: 0;
 }
 
+/* 一覧の続きを読み込むボタン。一覧の区切り線の下で中央に置く */
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--outline-variant);
+  margin: 0 -24px;
+}
+
 .ticket-list li {
   display: flex;
   align-items: center;

@@ -23,6 +23,11 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
+// チケット一覧APIの応答（50件ずつ返し、続きがあれば next_cursor が入る）
+function listResponse(tickets: unknown[], nextCursor: string | null = null) {
+  return jsonResponse({ tickets, next_cursor: nextCursor })
+}
+
 const existingTicket = {
   id: 1,
   title: '既存のチケット',
@@ -38,7 +43,7 @@ afterEach(() => {
 
 describe('チケット一覧', () => {
   it('APIから取得したチケットを、ステータスと一緒に表示する', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([existingTicket])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(listResponse([existingTicket])))
 
     renderApp()
 
@@ -48,7 +53,7 @@ describe('チケット一覧', () => {
   })
 
   it('チケットが無いときは、その旨を表示する', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(listResponse([])))
 
     renderApp()
 
@@ -64,12 +69,96 @@ describe('チケット一覧', () => {
   })
 })
 
+describe('一覧の続き', () => {
+  const olderTicket = { ...existingTicket, id: 2, title: '古いチケット' }
+
+  it('続きがあれば「さらに表示」を出し、押すと続きを一覧の下に足す', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(listResponse([existingTicket], 'cursor-1'))
+      .mockResolvedValueOnce(listResponse([olderTicket]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp()
+    fireEvent.click(await screen.findByRole('button', { name: 'さらに表示' }))
+
+    expect(await screen.findByText('古いチケット')).toBeInTheDocument()
+    expect(screen.getAllByRole('listitem').map((item) => item.querySelector('a')?.textContent)).toEqual([
+      '既存のチケット',
+      '古いチケット',
+    ])
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets?cursor=cursor-1')
+    // 最後のページなので、もうボタンは出さない
+    expect(screen.queryByRole('button', { name: 'さらに表示' })).not.toBeInTheDocument()
+  })
+
+  it('続きがなければ「さらに表示」を出さない', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(listResponse([existingTicket])))
+
+    renderApp()
+
+    await screen.findByText('既存のチケット')
+    expect(screen.queryByRole('button', { name: 'さらに表示' })).not.toBeInTheDocument()
+  })
+
+  it('絞り込んでいるときは、続きも同じ絞り込みで取得する', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(listResponse([{ ...existingTicket, status: 'done' }], 'cursor-1'))
+      .mockResolvedValueOnce(listResponse([{ ...olderTicket, status: 'done' }]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp('/?status=done')
+    fireEvent.click(await screen.findByRole('button', { name: 'さらに表示' }))
+
+    await screen.findByText('古いチケット')
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/tickets?status=done&cursor=cursor-1')
+  })
+
+  it('続きを読み込んでいる間に絞り込みを変えたら、届いた続きを新しい一覧に混ぜない', async () => {
+    let resolveMore: (response: Response) => void = () => {}
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(listResponse([existingTicket], 'cursor-1'))
+      .mockReturnValueOnce(new Promise<Response>((resolve) => (resolveMore = resolve)))
+      .mockResolvedValueOnce(listResponse([{ ...existingTicket, id: 3, title: '完了したチケット', status: 'done' }]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderApp()
+    fireEvent.click(await screen.findByRole('button', { name: 'さらに表示' }))
+    fireEvent.change(screen.getByLabelText('ステータス'), { target: { value: 'done' } })
+    await screen.findByText('完了したチケット')
+
+    resolveMore(listResponse([olderTicket]))
+
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1))
+    expect(screen.queryByText('古いチケット')).not.toBeInTheDocument()
+  })
+
+  it('続きの取得に失敗したら、それまでの一覧を残したままエラーを出し、もう一度押せる', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(listResponse([existingTicket], 'cursor-1'))
+        .mockResolvedValueOnce(jsonResponse({}, 500)),
+    )
+
+    renderApp()
+    fireEvent.click(await screen.findByRole('button', { name: 'さらに表示' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('続きを取得できませんでした')
+    expect(screen.getByText('既存のチケット')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'さらに表示' })).toBeEnabled()
+  })
+})
+
 describe('チケット作成フォーム', () => {
   it('作成したチケットを、一覧の先頭に追加する', async () => {
     const created = { ...existingTicket, id: 2, title: '新しいチケット', description: '概要' }
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse([existingTicket]))
+      .mockResolvedValueOnce(listResponse([existingTicket]))
       .mockResolvedValueOnce(jsonResponse(created, 201))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -98,7 +187,7 @@ describe('チケット作成フォーム', () => {
       'fetch',
       vi
         .fn()
-        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(listResponse([]))
         .mockResolvedValueOnce(jsonResponse({ errors: ["Title can't be blank"] }, 422)),
     )
 
@@ -115,7 +204,7 @@ describe('一覧から詳細へ', () => {
   it('チケットのタイトルを押すと、詳細画面に移る', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse([existingTicket]))
+      .mockResolvedValueOnce(listResponse([existingTicket]))
       .mockResolvedValueOnce(jsonResponse({ ...existingTicket, items: [] }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -132,7 +221,7 @@ describe('一覧の不明点の残数', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        jsonResponse([
+        listResponse([
           { ...existingTicket, id: 1, title: '不明点があるチケット', unknown_count: 2 },
           { ...existingTicket, id: 2, title: '不明点がないチケット', unknown_count: 0 },
         ]),
@@ -153,7 +242,7 @@ describe('一覧の不明点の残数', () => {
       'fetch',
       vi
         .fn()
-        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(listResponse([]))
         .mockResolvedValueOnce(jsonResponse(created, 201)),
     )
 
@@ -171,8 +260,8 @@ describe('一覧の絞り込み', () => {
   it('ステータスを選ぶと、そのステータスで絞り込んだ一覧を取得する', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse([existingTicket]))
-      .mockResolvedValueOnce(jsonResponse([{ ...existingTicket, id: 2, title: '完了したチケット', status: 'done' }]))
+      .mockResolvedValueOnce(listResponse([existingTicket]))
+      .mockResolvedValueOnce(listResponse([{ ...existingTicket, id: 2, title: '完了したチケット', status: 'done' }]))
     vi.stubGlobal('fetch', fetchMock)
 
     renderApp()
@@ -186,7 +275,7 @@ describe('一覧の絞り込み', () => {
   })
 
   it('URLで指定したステータスで、最初から絞り込む', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(listResponse([])))
 
     renderApp('/?status=in_review')
 
@@ -196,7 +285,7 @@ describe('一覧の絞り込み', () => {
   })
 
   it('知らないステータスがURLにあれば、絞り込まずに取得する', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(listResponse([])))
 
     renderApp('/?status=unknown')
 
@@ -211,7 +300,7 @@ describe('一覧の絞り込み', () => {
       'fetch',
       vi
         .fn()
-        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(listResponse([]))
         .mockResolvedValueOnce(jsonResponse(created, 201)),
     )
 

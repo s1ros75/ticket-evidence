@@ -11,6 +11,11 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
+// チケット一覧APIの応答（50件ずつ返し、続きがあれば next_cursor が入る）
+function listResponse(tickets: unknown[], nextCursor: string | null = null) {
+  return jsonResponse({ tickets, next_cursor: nextCursor })
+}
+
 const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false } as const
 
 function renderDashboard() {
@@ -46,7 +51,7 @@ describe('ダッシュボード', () => {
   })
 
   it('タイルを押すと、そのステータスで絞り込んだ一覧に移る', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(dashboard)).mockResolvedValueOnce(jsonResponse([]))
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(dashboard)).mockResolvedValueOnce(listResponse([]))
     vi.stubGlobal('fetch', fetchMock)
 
     renderDashboard()
