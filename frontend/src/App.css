@@ -782,6 +782,22 @@ main.login {
   align-self: flex-end;
 }
 
+/* 登録画面の説明。誰が管理者になるかを、入力の前に伝える */
+.login-lead {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+}
+
+/* ログイン画面と登録画面を行き来するリンク。区切り線の下に置き、主な操作（送信）と分ける */
+.login-switch {
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--outline-variant);
+  text-align: center;
+  font-size: 14px;
+}
+
 @media (max-width: 560px) {
   .login-card {
     padding: 24px;

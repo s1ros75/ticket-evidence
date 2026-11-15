@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, NavLink } from 'react-router'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router'
 import { setUnauthorizedHandler } from '../api/client'
 import { fetchCurrentUser, logout, ROLE_LABELS, type CurrentUser } from '../api/session'
 import { CurrentUserContext } from '../auth/CurrentUserContext'
 import { LoginPage } from '../pages/LoginPage'
+import { SignupPage } from '../pages/SignupPage'
 
 type Props = {
   children: ReactNode
@@ -14,6 +15,8 @@ export function AuthGate({ children }: Props) {
   // undefined: 確認中、null: 未ログイン
   const [user, setUser] = useState<CurrentUser | null | undefined>(undefined)
   const [loadError, setLoadError] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchCurrentUser()
@@ -39,6 +42,17 @@ export function AuthGate({ children }: Props) {
     return <p>読み込み中…</p>
   }
   if (user === null) {
+    // 登録画面だけはログインせずに開ける。ほかのURLでは、URLを変えずにログイン画面を出す
+    if (location.pathname === '/signup') {
+      return (
+        <SignupPage
+          onSignedUp={(signedUp) => {
+            setUser(signedUp)
+            navigate('/', { replace: true })
+          }}
+        />
+      )
+    }
     return <LoginPage onLoggedIn={setUser} />
   }
 

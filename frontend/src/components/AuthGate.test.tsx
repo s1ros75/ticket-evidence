@@ -19,9 +19,9 @@ function listResponse(tickets: unknown[], nextCursor: string | null = null) {
 const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false, organization: { id: 1, name: '株式会社サンプル' } }
 const unauthorized = () => jsonResponse({ errors: ['ログインしてください'] }, 401)
 
-function renderGate() {
+function renderGate(path = '/') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <AuthGate>
         <App />
       </AuthGate>
@@ -181,3 +181,105 @@ describe('ログイン', () => {
   })
 })
 
+describe('組織の登録', () => {
+  const signupInput = {
+    organization_name: '株式会社はじめて',
+    name: '田中',
+    email: 'tanaka@example.com',
+    password: 'correct-horse-battery',
+  }
+  const signedUp = {
+    id: 9,
+    name: '田中',
+    email: 'tanaka@example.com',
+    role: 'reviewer',
+    admin: true,
+    organization: { id: 9, name: '株式会社はじめて' },
+  }
+
+  function fillSignupForm() {
+    fireEvent.change(screen.getByLabelText('組織名'), { target: { value: signupInput.organization_name } })
+    fireEvent.change(screen.getByLabelText('あなたの名前'), { target: { value: signupInput.name } })
+    fireEvent.change(screen.getByLabelText('メールアドレス'), { target: { value: signupInput.email } })
+    fireEvent.change(screen.getByLabelText('パスワード（12文字以上）'), { target: { value: signupInput.password } })
+  }
+
+  it('ログイン画面から登録画面に移り、またログイン画面に戻れる', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(unauthorized()))
+
+    renderGate()
+    fireEvent.click(await screen.findByRole('link', { name: '新しく組織を登録する' }))
+
+    expect(await screen.findByRole('heading', { name: '組織を登録' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('link', { name: 'ログインに戻る' }))
+
+    expect(await screen.findByRole('heading', { name: 'ログイン' })).toBeInTheDocument()
+  })
+
+  it('登録すると、そのまま組織に入って一覧を出す', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(unauthorized())
+      .mockResolvedValueOnce(jsonResponse(signedUp, 201))
+      .mockResolvedValueOnce(listResponse([]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderGate('/signup')
+    await screen.findByRole('heading', { name: '組織を登録' })
+    fillSignupForm()
+    fireEvent.click(screen.getByRole('button', { name: '登録して始める' }))
+
+    expect(await screen.findByText('チケットはまだありません')).toBeInTheDocument()
+    expect(screen.getByText('株式会社はじめて')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/v1/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(signupInput),
+    })
+  })
+
+  it('入力に誤りがあれば、APIが返した理由を表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(jsonResponse({ errors: ['組織名を入力してください', 'メールアドレスはすでに使われています'] }, 422)),
+    )
+
+    renderGate('/signup')
+    await screen.findByRole('heading', { name: '組織を登録' })
+    fillSignupForm()
+    fireEvent.click(screen.getByRole('button', { name: '登録して始める' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('組織名を入力してください')
+    expect(alert).toHaveTextContent('メールアドレスはすでに使われています')
+  })
+
+  it('回数の制限を超えたら、APIが返した理由を表示する', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(jsonResponse({ errors: ['しばらく待ってから、もう一度お試しください'] }, 429)),
+    )
+
+    renderGate('/signup')
+    await screen.findByRole('heading', { name: '組織を登録' })
+    fillSignupForm()
+    fireEvent.click(screen.getByRole('button', { name: '登録して始める' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('しばらく待ってから、もう一度お試しください')
+  })
+
+  it('ログイン中に登録画面のURLを開いたら、一覧に移る', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(listResponse([])))
+
+    renderGate('/signup')
+
+    expect(await screen.findByText('チケットはまだありません')).toBeInTheDocument()
+  })
+})

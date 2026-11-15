@@ -1,4 +1,4 @@
-import { Route, Routes, useParams } from 'react-router'
+import { Navigate, Route, Routes, useParams } from 'react-router'
 import { AccountsPage } from './pages/AccountsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { PasswordPage } from './pages/PasswordPage'
@@ -20,6 +20,8 @@ function App() {
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/password" element={<PasswordPage />} />
       <Route path="/admin/users" element={<AccountsPage />} />
+      {/* ログイン中に登録画面のURLを開いたときは、一覧に移す（登録はログインしていないときだけ） */}
+      <Route path="/signup" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
