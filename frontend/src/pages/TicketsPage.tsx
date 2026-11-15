@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { fetchTickets, isTicketStatus, type Ticket, type TicketStatus, type TicketSummary } from '../api/tickets'
 import { StatusFilter } from '../components/StatusFilter'
@@ -13,14 +13,32 @@ export function TicketsPage() {
 
   const [tickets, setTickets] = useState<TicketSummary[] | null>(null)
   const [loadError, setLoadError] = useState(false)
+  // 一覧APIは50件ずつ返す。続きがあるときだけ、次を取るためのカーソルが入る
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [loadMoreError, setLoadMoreError] = useState(false)
+  // 絞り込みを切り替えるたびに増やす。続きの応答が届いたときに、別の絞り込みの一覧へ混ぜないため
+  const listVersion = useRef(0)
+
+  // 絞り込みが変わったら、前の絞り込みの「続き」の状態を捨てる（描画中に合わせる。effectで直すと1回余分に描画される）
+  const [listedStatus, setListedStatus] = useState(status)
+  if (listedStatus !== status) {
+    setListedStatus(status)
+    setNextCursor(null)
+    setLoadingMore(false)
+    setLoadMoreError(false)
+  }
 
   useEffect(() => {
+    listVersion.current += 1
+
     // 絞り込みを続けて切り替えたときに、古い応答で上書きしないようにする
     let ignore = false
     fetchTickets(status)
-      .then((result) => {
+      .then((page) => {
         if (ignore) return
-        setTickets(result)
+        setTickets(page.tickets)
+        setNextCursor(page.next_cursor)
         setLoadError(false)
       })
       .catch(() => {
@@ -35,7 +53,27 @@ export function TicketsPage() {
     setSearchParams(value ? { status: value } : {})
   }
 
+  function handleLoadMore() {
+    if (!nextCursor) return
+    const version = listVersion.current
+    setLoadingMore(true)
+    setLoadMoreError(false)
+    fetchTickets(status, nextCursor)
+      .then((page) => {
+        if (version !== listVersion.current) return
+        setTickets((current) => [...(current ?? []), ...page.tickets])
+        setNextCursor(page.next_cursor)
+      })
+      .catch(() => {
+        if (version === listVersion.current) setLoadMoreError(true)
+      })
+      .finally(() => {
+        if (version === listVersion.current) setLoadingMore(false)
+      })
+  }
+
   // 作成したばかりのチケットには項目がないので、不明点は0件
+  // 続きはカーソルより古いチケットだけを返すので、先頭に足しても続きと重ならない
   function handleCreated(ticket: Ticket) {
     // 絞り込みに合わないチケットは、一覧に足さない
     if (status && ticket.status !== status) return
@@ -59,7 +97,17 @@ export function TicketsPage() {
         ) : tickets === null ? (
           <p>読み込み中…</p>
         ) : (
-          <TicketList tickets={tickets} />
+          <>
+            <TicketList tickets={tickets} />
+            {loadMoreError && <p role="alert">続きを取得できませんでした</p>}
+            {nextCursor && (
+              <div className="load-more">
+                <button type="button" className="secondary" disabled={loadingMore} onClick={handleLoadMore}>
+                  {loadingMore ? '読み込み中…' : 'さらに表示'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </main>

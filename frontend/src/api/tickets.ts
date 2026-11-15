@@ -85,8 +85,18 @@ export const ITEM_KIND_LABELS: Record<TicketItemKind, string> = {
 
 const TICKETS_URL = '/api/v1/tickets'
 
-export function fetchTickets(status?: TicketStatus): Promise<TicketSummary[]> {
-  return getJson(status ? `${TICKETS_URL}?${new URLSearchParams({ status })}` : TICKETS_URL)
+// 一覧APIは50件ずつ返す。続きがあれば next_cursor が入り、それを cursor に付けて次を取る
+export type TicketPage = {
+  tickets: TicketSummary[]
+  next_cursor: string | null
+}
+
+export function fetchTickets(status?: TicketStatus, cursor?: string): Promise<TicketPage> {
+  const params = new URLSearchParams()
+  if (status) params.set('status', status)
+  if (cursor) params.set('cursor', cursor)
+  const query = params.toString()
+  return getJson(query ? `${TICKETS_URL}?${query}` : TICKETS_URL)
 }
 
 export function createTicket(input: TicketInput): Promise<Ticket> {

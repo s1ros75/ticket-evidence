@@ -11,6 +11,11 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
+// チケット一覧APIの応答（50件ずつ返し、続きがあれば next_cursor が入る）
+function listResponse(tickets: unknown[], nextCursor: string | null = null) {
+  return jsonResponse({ tickets, next_cursor: nextCursor })
+}
+
 const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false }
 const unauthorized = () => jsonResponse({ errors: ['ログインしてください'] }, 401)
 
@@ -34,7 +39,7 @@ describe('ログイン', () => {
       .fn()
       .mockResolvedValueOnce(unauthorized())
       .mockResolvedValueOnce(jsonResponse(member))
-      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(listResponse([]))
     vi.stubGlobal('fetch', fetchMock)
 
     renderGate()
@@ -70,7 +75,7 @@ describe('ログイン', () => {
   })
 
   it('ログイン中なら、そのまま画面を出す', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(listResponse([])))
 
     renderGate()
 
@@ -82,7 +87,7 @@ describe('ログイン', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse(member))
-      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(listResponse([]))
       .mockResolvedValueOnce(jsonResponse(null, 204))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -110,7 +115,7 @@ describe('ログイン', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse(member))
-      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(listResponse([]))
       .mockResolvedValueOnce(
         jsonResponse({ status_counts: { investigating: 0, in_review: 0, done: 0 }, investigating_with_unknowns: 0 }),
       )
@@ -130,7 +135,7 @@ describe('ログイン', () => {
       vi
         .fn()
         .mockResolvedValueOnce(jsonResponse({ ...member, admin: true }))
-        .mockResolvedValueOnce(jsonResponse([])),
+        .mockResolvedValueOnce(listResponse([])),
     )
 
     renderGate()
@@ -140,7 +145,7 @@ describe('ログイン', () => {
   })
 
   it('管理者でなければ、アカウント管理へのリンクを出さない', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(listResponse([])))
 
     renderGate()
 
@@ -150,7 +155,7 @@ describe('ログイン', () => {
 
   it('デモ環境では、その旨を画面の上に表示する', async () => {
     vi.stubEnv('VITE_DEMO_MODE', '1')
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(listResponse([])))
 
     renderGate()
 
@@ -159,7 +164,7 @@ describe('ログイン', () => {
   })
 
   it('デモ環境でなければ、表示しない', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(jsonResponse([])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(listResponse([])))
 
     renderGate()
 
