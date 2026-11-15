@@ -2,18 +2,25 @@
 #
 # - 開発環境では、bin/rails db:seed で作る
 # - それ以外の環境（公開するデモなど）では、SEED_DEMO=1 を付けたときだけ作る
-# - 何度実行してもよい。アカウントはメールアドレスで探して、なければ作る
+# - 組織を2つ作る。別の組織でログインすると、もう一方のチケットやアカウントが見えないことを試せる
+# - 何度実行してもよい。組織は名前で、アカウントはメールアドレスで探して、なければ作る
 # - デモのチケットは、チケットが1件もないときだけ作る（作業中のデータに混ぜない）
 return unless Rails.env.development? || ENV["SEED_DEMO"] == "1"
 
 DEMO_PASSWORD = "password1234".freeze
 
+sample = Organization.find_or_create_by!(name: "株式会社サンプル")
+demo = Organization.find_or_create_by!(name: "合同会社デモ")
+
 accounts = {
-  member: { name: "佐藤", email: "member@example.com", role: "member" },
-  reviewer: { name: "鈴木", email: "reviewer@example.com", role: "reviewer", admin: true },
-  reviewer2: { name: "高橋", email: "reviewer2@example.com", role: "reviewer" }
+  member: { name: "佐藤", email: "member@example.com", role: "member", organization: sample },
+  reviewer: { name: "鈴木", email: "reviewer@example.com", role: "reviewer", admin: true, organization: sample },
+  reviewer2: { name: "高橋", email: "reviewer2@example.com", role: "reviewer", organization: sample },
+  demo_admin: { name: "山田", email: "demo-admin@example.com", role: "reviewer", admin: true, organization: demo },
+  demo_member: { name: "中村", email: "demo-member@example.com", role: "member", organization: demo }
 }.transform_values do |attributes|
   User.find_or_create_by!(email: attributes[:email]) do |user|
+    user.organization = attributes[:organization]
     user.name = attributes[:name]
     user.role = attributes[:role]
     user.admin = attributes.fetch(:admin, false)
@@ -23,11 +30,11 @@ end
 
 return if Ticket.exists?
 
-sato, suzuki, takahashi = accounts.values_at(:member, :reviewer, :reviewer2)
+sato, suzuki, takahashi, yamada, nakamura = accounts.values_at(:member, :reviewer, :reviewer2, :demo_admin, :demo_member)
 
-# 画面やAPIと同じく、操作と一緒に変更履歴も残す
+# 画面やAPIと同じく、操作と一緒に変更履歴も残す。チケットは作った人の組織のものになる
 def create_ticket(user, title, description)
-  Ticket.create!(title: title, description: description).tap do |ticket|
+  user.organization.tickets.create!(title: title, description: description).tap do |ticket|
     ticket.events.create!(user: user, action: "ticket_created", details: { title: ticket.title })
   end
 end
@@ -87,4 +94,13 @@ ActiveRecord::Base.transaction do
   # 5. 調査中：作ったばかり
   roles = create_ticket(sato, "管理画面の権限設計", nil)
   add_item(roles, sato, "unknown", "店舗スタッフに売上を見せてよいか")
+
+  # 合同会社デモ：株式会社サンプルの人からは見えない
+  portal = create_ticket(nakamura, "社内ポータルのお知らせ機能", "全社員向けのお知らせを、ポータルのトップに出す。")
+  add_item(portal, nakamura, "unknown", "お知らせを出せるのは総務だけか")
+  add_item(portal, nakamura, "assumption", "既読の管理はしない")
+
+  holiday = create_ticket(yamada, "休暇申請の承認フロー", "休暇申請を、誰がどの順番で承認するかを決める。")
+  approver = add_item(holiday, yamada, "unknown", "部長が不在のときの代理承認者")
+  resolve(approver, yamada, memo: "人事の佐々木さんに確認。課長が代理で承認する")
 end
