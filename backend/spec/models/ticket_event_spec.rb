@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe TicketEvent, type: :model do
-  let(:ticket) { Ticket.create!(title: "要件の確認") }
+  let(:ticket) { create_ticket(title: "要件の確認") }
   let(:user) { create_user }
 
   it "決められた操作なら有効" do

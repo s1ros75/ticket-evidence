@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Evidence, type: :model do
-  let(:item) { Ticket.create!(title: "要件の確認").items.create!(kind: "unknown", body: "締め切りはいつか") }
+  let(:item) { create_ticket(title: "要件の確認").items.create!(kind: "unknown", body: "締め切りはいつか") }
 
   describe "validations" do
     it "メモだけでも有効" do

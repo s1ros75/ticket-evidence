@@ -1,8 +1,18 @@
 module AuthHelpers
   PASSWORD = "correct-horse-battery".freeze
 
-  def create_user(role: "member", email: "#{role}@example.com", name: role == "reviewer" ? "レビュアー" : "担当者", admin: false)
-    User.create!(name: name, email: email, password: PASSWORD, role: role, admin: admin)
+  # 特に指定がなければ、ユーザーもチケットもこの組織に作る（テストごとに1つ）
+  def default_organization
+    @default_organization ||= Organization.create!(name: "テスト株式会社")
+  end
+
+  def create_user(role: "member", email: "#{role}@example.com", name: role == "reviewer" ? "レビュアー" : "担当者",
+                  admin: false, organization: default_organization)
+    User.create!(name: name, email: email, password: PASSWORD, role: role, admin: admin, organization: organization)
+  end
+
+  def create_ticket(organization: default_organization, **attributes)
+    Ticket.create!(organization: organization, **attributes)
   end
 
   # リクエストスペックで、Cookieのセッションにログインした状態を作る

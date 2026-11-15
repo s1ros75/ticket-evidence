@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["ticket_item_id"], name: "index_evidences_on_ticket_item_id"
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "ticket_events", force: :cascade do |t|
@@ -52,8 +58,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.string "status", default: "investigating", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["created_at", "id"], name: "index_tickets_on_created_at_and_id"
-    t.index ["status", "created_at", "id"], name: "index_tickets_on_status_and_created_at_and_id"
+    t.bigint "organization_id", null: false
+    t.index ["organization_id", "created_at", "id"], name: "index_tickets_on_organization_id_and_created_at_and_id"
+    t.index ["organization_id", "status", "created_at", "id"], name: "index_tickets_on_organization_status_created_at_id"
   end
 
   create_table "user_sessions", force: :cascade do |t|
@@ -74,12 +81,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "admin", default: false, null: false
+    t.bigint "organization_id", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
   add_foreign_key "evidences", "ticket_items"
   add_foreign_key "ticket_events", "tickets"
   add_foreign_key "ticket_events", "users"
   add_foreign_key "ticket_items", "tickets"
+  add_foreign_key "tickets", "organizations"
   add_foreign_key "user_sessions", "users"
+  add_foreign_key "users", "organizations"
 end

@@ -1,6 +1,7 @@
 class Ticket < ApplicationRecord
   STATUSES = %w[investigating in_review done].freeze
 
+  belongs_to :organization
   has_many :items, -> { order(:created_at, :id) }, class_name: "TicketItem", dependent: :destroy
   has_many :events, class_name: "TicketEvent", dependent: :destroy
 

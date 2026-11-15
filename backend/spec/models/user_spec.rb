@@ -2,7 +2,8 @@ require "rails_helper"
 
 RSpec.describe User, type: :model do
   def build_user(**attributes)
-    User.new(name: "担当者", email: "member@example.com", password: "correct-horse-battery", **attributes)
+    User.new(name: "担当者", email: "member@example.com", password: "correct-horse-battery", organization: default_organization,
+             **attributes)
   end
 
   it "名前・メール・パスワードがあれば有効で、ロールの初期値は担当者" do
@@ -18,6 +19,17 @@ RSpec.describe User, type: :model do
   it "同じメールは登録できない" do
     build_user.save!
     expect(build_user(email: "MEMBER@example.com")).not_to be_valid
+  end
+
+  # ログインはメールアドレスで本人を探すので、組織が違っても同じメールは使えない（1人1組織）
+  it "別の組織でも、同じメールは登録できない" do
+    build_user.save!
+    other = Organization.create!(name: "別の組織")
+    expect(build_user(organization: other)).not_to be_valid
+  end
+
+  it "組織がなければ無効" do
+    expect(build_user(organization: nil)).not_to be_valid
   end
 
   it "決められた以外のロールは無効" do

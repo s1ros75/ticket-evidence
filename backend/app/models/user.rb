@@ -5,11 +5,13 @@ class User < ApplicationRecord
   MINIMUM_PASSWORD_LENGTH = 12
 
   has_secure_password
+  belongs_to :organization
   has_many :user_sessions, dependent: :destroy
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 
   validates :name, presence: true
+  # ログインはメールアドレスで本人を探すので、組織が違っても同じメールは使えない（1人1組織）
   validates :email, presence: true, uniqueness: true
   validates :role, inclusion: { in: ROLES }
   validates :password, length: { minimum: MINIMUM_PASSWORD_LENGTH }, allow_nil: true
