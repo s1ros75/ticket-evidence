@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_142759) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,7 +52,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_142759) do
     t.string "status", default: "investigating", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["status"], name: "index_tickets_on_status"
+    t.index ["created_at", "id"], name: "index_tickets_on_created_at_and_id"
+    t.index ["status", "created_at", "id"], name: "index_tickets_on_status_and_created_at_and_id"
   end
 
   create_table "user_sessions", force: :cascade do |t|

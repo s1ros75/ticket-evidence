@@ -3,11 +3,13 @@ module Api
     class TicketsController < ApplicationController
       before_action :require_reviewer, only: [:approve, :send_back]
 
+      # 50件ずつ返す。続きがあるときは next_cursor を返し、次はそれを cursor に付けて呼ぶ
       def index
-        tickets = Ticket.with_unknown_count.order(created_at: :desc)
-        tickets = tickets.where(status: params[:status].to_s) if params[:status].present?
+        page = TicketListQuery.call(status: params[:status].to_s, cursor: params[:cursor].to_s)
 
-        render json: tickets
+        render json: { tickets: page.tickets, next_cursor: page.next_cursor }
+      rescue TicketListQuery::InvalidCursor
+        render json: { errors: ["cursorが正しくありません"] }, status: :bad_request
       end
 
       def show

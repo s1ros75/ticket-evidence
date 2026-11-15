@@ -33,7 +33,7 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
     get "/api/v1/tickets"
 
     expect(response).to have_http_status(200)
-    titles = JSON.parse(response.body).map { |ticket| ticket["title"] }
+    titles = JSON.parse(response.body)["tickets"].map { |ticket| ticket["title"] }
     expect(titles).to eq ["新しいチケット", "古いチケット"]
   end
 
@@ -43,8 +43,28 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
 
     get "/api/v1/tickets", params: { status: "done" }
 
-    titles = JSON.parse(response.body).map { |ticket| ticket["title"] }
+    titles = JSON.parse(response.body)["tickets"].map { |ticket| ticket["title"] }
     expect(titles).to eq ["完了したチケット"]
+  end
+
+  it "50件ずつ返し、next_cursorで続きを取れる" do
+    51.times { |i| Ticket.create!(title: "チケット#{i}", created_at: (51 - i).minutes.ago) }
+
+    get "/api/v1/tickets"
+    first = JSON.parse(response.body)
+    get "/api/v1/tickets", params: { cursor: first["next_cursor"] }
+    second = JSON.parse(response.body)
+
+    expect(first["tickets"].size).to eq 50
+    expect(second["tickets"].map { |ticket| ticket["title"] }).to eq ["チケット0"]
+    expect(second["next_cursor"]).to be_nil
+  end
+
+  it "読めないcursorなら400を返す" do
+    get "/api/v1/tickets", params: { cursor: "壊れた値" }
+
+    expect(response).to have_http_status(400)
+    expect(JSON.parse(response.body)["errors"]).to eq ["cursorが正しくありません"]
   end
 
   it "チケットごとに、残っている不明点の数を返す" do
@@ -57,7 +77,7 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
 
     get "/api/v1/tickets"
 
-    counts = JSON.parse(response.body).to_h { |ticket| [ticket["title"], ticket["unknown_count"]] }
+    counts = JSON.parse(response.body)["tickets"].to_h { |ticket| [ticket["title"], ticket["unknown_count"]] }
     expect(counts).to eq("不明点があるチケット" => 2, "不明点がないチケット" => 0)
   end
 end
