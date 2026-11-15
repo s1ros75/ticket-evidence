@@ -3,6 +3,9 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from '../App'
 import type { User } from '../api/session'
+
+// ログイン中の本人は、所属する組織も持つ
+const organization = { id: 1, name: '株式会社サンプル' }
 import { CurrentUserContext } from '../auth/CurrentUserContext'
 
 function jsonResponse(body: unknown, status = 200) {
@@ -17,7 +20,7 @@ const reviewer: User = { id: 2, name: 'レビュアー', email: 'reviewer@exampl
 
 function renderDetail(id = 1, user: User = member) {
   return render(
-    <CurrentUserContext.Provider value={user}>
+    <CurrentUserContext.Provider value={{ ...user, organization }}>
       <MemoryRouter initialEntries={[`/tickets/${id}`]}>
         <App />
       </MemoryRouter>

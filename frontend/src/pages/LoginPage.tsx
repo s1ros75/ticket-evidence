@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { ValidationError } from '../api/client'
-import { login, type User } from '../api/session'
+import { login, type CurrentUser } from '../api/session'
 
 type Props = {
-  onLoggedIn: (user: User) => void
+  onLoggedIn: (user: CurrentUser) => void
 }
 
 export function LoginPage({ onLoggedIn }: Props) {

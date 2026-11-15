@@ -12,11 +12,17 @@ class ApplicationController < ActionController::API
     current_user_session&.user
   end
 
+  # API の検索は、必ずここから始める（Ticket.find のように全体から探さない）
+  # 他の組織のデータは「見つからない」ことになり、RecordNotFound から 404 を返す
+  def current_organization
+    current_user.organization
+  end
+
   # Cookieにはサーバー側のセッションのidだけを持たせ、毎回DBで有効かを確かめる
   def current_user_session
     return @current_user_session if defined?(@current_user_session)
 
-    user_session = UserSession.includes(:user).find_by(id: session[:user_session_id]) if session[:user_session_id]
+    user_session = UserSession.includes(user: :organization).find_by(id: session[:user_session_id]) if session[:user_session_id]
     if user_session&.expired?
       user_session.destroy
       user_session = nil

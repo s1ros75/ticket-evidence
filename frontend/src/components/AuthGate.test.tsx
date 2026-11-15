@@ -16,7 +16,7 @@ function listResponse(tickets: unknown[], nextCursor: string | null = null) {
   return jsonResponse({ tickets, next_cursor: nextCursor })
 }
 
-const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false }
+const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false, organization: { id: 1, name: '株式会社サンプル' } }
 const unauthorized = () => jsonResponse({ errors: ['ログインしてください'] }, 401)
 
 function renderGate() {
@@ -81,6 +81,14 @@ describe('ログイン', () => {
 
     expect(await screen.findByText('チケットはまだありません')).toBeInTheDocument()
     expect(screen.queryByLabelText('パスワード')).not.toBeInTheDocument()
+  })
+
+  it('ヘッダーに、ログインしている組織の名前を出す', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(member)).mockResolvedValueOnce(listResponse([])))
+
+    renderGate()
+
+    expect(await screen.findByText('株式会社サンプル')).toBeInTheDocument()
   })
 
   it('ログアウトすると、ログイン画面に戻る', async () => {

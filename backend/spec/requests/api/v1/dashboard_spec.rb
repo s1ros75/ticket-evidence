@@ -4,13 +4,13 @@ RSpec.describe "GET /api/v1/dashboard", type: :request do
   before { sign_in }
 
   it "ステータス別の件数と、不明点が残っている調査中のチケット数を返す" do
-    with_unknowns = Ticket.create!(title: "不明点あり")
+    with_unknowns = create_ticket(title: "不明点あり")
     with_unknowns.items.create!(kind: "unknown", body: "締め切りはいつか")
     with_unknowns.items.create!(kind: "unknown", body: "支払い方法は何があるか")
-    Ticket.create!(title: "不明点なし")
-    Ticket.create!(title: "レビュー中", status: "in_review")
-    Ticket.create!(title: "完了1", status: "done")
-    Ticket.create!(title: "完了2", status: "done")
+    create_ticket(title: "不明点なし")
+    create_ticket(title: "レビュー中", status: "in_review")
+    create_ticket(title: "完了1", status: "done")
+    create_ticket(title: "完了2", status: "done")
 
     get "/api/v1/dashboard"
 

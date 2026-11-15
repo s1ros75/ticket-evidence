@@ -4,7 +4,7 @@ RSpec.describe "POST /api/v1/tickets/:id/approve", type: :request do
   before { sign_in(create_user(role: "reviewer")) }
 
   it "レビュー中のチケットを完了にして返す" do
-    ticket = Ticket.create!(title: "要件の確認", status: "in_review")
+    ticket = create_ticket(title: "要件の確認", status: "in_review")
 
     post "/api/v1/tickets/#{ticket.id}/approve", as: :json
 
@@ -13,7 +13,7 @@ RSpec.describe "POST /api/v1/tickets/:id/approve", type: :request do
   end
 
   it "レビュー中でなければ422を返す" do
-    ticket = Ticket.create!(title: "要件の確認")
+    ticket = create_ticket(title: "要件の確認")
 
     post "/api/v1/tickets/#{ticket.id}/approve", as: :json
 
@@ -24,7 +24,7 @@ end
 RSpec.describe "POST /api/v1/tickets/:id/send_back", type: :request do
   before { sign_in(create_user(role: "reviewer")) }
 
-  let(:ticket) { Ticket.create!(title: "要件の確認", status: "in_review") }
+  let(:ticket) { create_ticket(title: "要件の確認", status: "in_review") }
 
   it "調査中に戻したチケットを、追加した不明点も含めて返す" do
     post "/api/v1/tickets/#{ticket.id}/send_back",
@@ -46,7 +46,7 @@ RSpec.describe "POST /api/v1/tickets/:id/send_back", type: :request do
 end
 
 RSpec.describe "レビューの操作の権限", type: :request do
-  let(:ticket) { Ticket.create!(title: "要件の確認", status: "in_review") }
+  let(:ticket) { create_ticket(title: "要件の確認", status: "in_review") }
 
   before { sign_in(create_user(role: "member")) }
 

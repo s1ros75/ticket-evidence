@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "POST /api/v1/tickets/:ticket_id/items/:id/resolve", type: :request do
   before { sign_in }
 
-  let(:ticket) { Ticket.create!(title: "要件の確認") }
+  let(:ticket) { create_ticket(title: "要件の確認") }
   let(:item) { ticket.items.create!(kind: "unknown", body: "締め切りはいつか") }
 
   it "根拠を付けて解決し、確認済みになった項目を返す" do
@@ -28,7 +28,7 @@ RSpec.describe "POST /api/v1/tickets/:ticket_id/items/:id/resolve", type: :reque
   end
 
   it "別のチケットの項目は404を返す" do
-    other = Ticket.create!(title: "別のチケット")
+    other = create_ticket(title: "別のチケット")
 
     post "/api/v1/tickets/#{other.id}/items/#{item.id}/resolve",
          params: { evidence: { memo: "メモ" } },
@@ -42,7 +42,7 @@ RSpec.describe "GET /api/v1/tickets/:id（根拠）", type: :request do
   before { sign_in }
 
   it "項目ごとに根拠を含めて返す" do
-    ticket = Ticket.create!(title: "要件の確認")
+    ticket = create_ticket(title: "要件の確認")
     item = ticket.items.create!(kind: "confirmed", body: "対象はWeb版のみ")
     item.evidences.create!(memo: "打ち合わせで確認")
 

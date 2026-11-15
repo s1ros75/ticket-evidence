@@ -15,7 +15,7 @@ RSpec.describe "検証エラーのメッセージ", type: :request do
   end
 
   it "項目の内容が空" do
-    ticket = Ticket.create!(title: "要件の確認")
+    ticket = create_ticket(title: "要件の確認")
 
     post "/api/v1/tickets/#{ticket.id}/items", params: { item: { kind: "unknown", body: "" } }, as: :json
 
@@ -23,7 +23,7 @@ RSpec.describe "検証エラーのメッセージ", type: :request do
   end
 
   it "根拠のリンクがhttp/httpsでない" do
-    item = Ticket.create!(title: "要件の確認").items.create!(kind: "unknown", body: "締め切りはいつか")
+    item = create_ticket(title: "要件の確認").items.create!(kind: "unknown", body: "締め切りはいつか")
 
     post "/api/v1/tickets/#{item.ticket_id}/items/#{item.id}/resolve",
          params: { evidence: { url: "ftp://example.com" } }, as: :json

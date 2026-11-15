@@ -112,6 +112,16 @@ a.brand:hover {
   font-size: 14px;
 }
 
+/* どの組織でログインしているか。別の組織のデータが見えないので、今どこにいるかを常に出す */
+.account .organization {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface-container-high);
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 .avatar {
   width: 32px;
   height: 32px;
@@ -167,6 +177,13 @@ a.brand:hover {
 
   .account .user > span:first-child {
     display: none;
+  }
+
+  /* 幅が狭いときは、長い組織名で操作が押し出されないよう省略する */
+  .account .organization {
+    max-width: 8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

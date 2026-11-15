@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe SendBackTicket do
   let(:user) { create_user }
-  let(:ticket) { Ticket.create!(title: "要件の確認", status: "in_review") }
+  let(:ticket) { create_ticket(title: "要件の確認", status: "in_review") }
 
   it "調査中に戻し、差し戻しの理由を不明点として残す" do
     result = described_class.call(user: user, ticket: ticket, reason: "退会時のデータの扱いが書かれていない")
@@ -65,5 +65,13 @@ RSpec.describe SendBackTicket do
     it "別のレビュアーなら差し戻せる" do
       expect(described_class.call(user: user, ticket: ticket, reason: "理由")).to be_success
     end
+  end
+
+  # コントローラーは自分の組織のチケットしか渡さないが、別の入口から呼ばれても組織をまたいで操作させない
+  it "別の組織のユーザーでは操作できない" do
+    outsider = create_user(email: "outsider@example.com", organization: Organization.create!(name: "別の組織"))
+
+    expect { described_class.call(user: outsider, ticket: ticket, reason: "理由") }.to raise_error(ArgumentError, /組織/)
+    expect(ticket.reload.status).to eq "in_review"
   end
 end

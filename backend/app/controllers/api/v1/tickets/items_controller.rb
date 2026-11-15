@@ -3,7 +3,7 @@ module Api
     module Tickets
       class ItemsController < ApplicationController
         def create
-          ticket = Ticket.find(params[:ticket_id])
+          ticket = current_organization.tickets.find(params[:ticket_id])
           item = ticket.items.new(item_params)
           created = TicketItem.transaction do
             next false unless item.save
@@ -24,7 +24,7 @@ module Api
         end
 
         def resolve
-          item = Ticket.find(params[:ticket_id]).items.find(params[:id])
+          item = current_organization.tickets.find(params[:ticket_id]).items.find(params[:id])
           result = ResolveTicketItem.call(user: current_user, item: item, evidence_params: evidence_params)
 
           if result.success?

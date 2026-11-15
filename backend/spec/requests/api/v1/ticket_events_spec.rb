@@ -11,7 +11,7 @@ RSpec.describe "変更履歴", type: :request do
   end
 
   it "項目を追加すると、追加の履歴が残る" do
-    ticket = Ticket.create!(title: "要件の確認")
+    ticket = create_ticket(title: "要件の確認")
 
     post "/api/v1/tickets/#{ticket.id}/items", params: { item: { kind: "unknown", body: "締め切りはいつか" } }, as: :json
 
@@ -27,7 +27,7 @@ RSpec.describe "変更履歴", type: :request do
   end
 
   it "GET /api/v1/tickets/:id/events は、新しい順に、操作した人の名前つきで返す" do
-    ticket = Ticket.create!(title: "要件の確認")
+    ticket = create_ticket(title: "要件の確認")
     ticket.events.create!(user: user, action: "ticket_created", details: { title: "要件の確認" }, created_at: 1.hour.ago)
     ticket.events.create!(user: user, action: "review_requested", details: { status: %w[investigating in_review] })
 

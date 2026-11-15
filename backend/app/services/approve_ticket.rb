@@ -1,5 +1,7 @@
 # レビュー中のチケットを完了にする
 class ApproveTicket
+  include OrganizationGuard
+
   Result = Struct.new(:ticket, :errors, keyword_init: true) do
     def success?
       errors.empty?
@@ -16,6 +18,7 @@ class ApproveTicket
   end
 
   def call
+    ensure_same_organization!(@user, @ticket)
     errors = []
 
     Ticket.transaction do

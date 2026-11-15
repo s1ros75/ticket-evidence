@@ -3,13 +3,16 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from '../App'
 import type { User } from '../api/session'
+
+// ログイン中の本人は、所属する組織も持つ
+const organization = { id: 1, name: '株式会社サンプル' }
 import { CurrentUserContext } from '../auth/CurrentUserContext'
 
 const member: User = { id: 2, name: '佐藤', email: 'sato@example.com', role: 'member', admin: false }
 
 function renderPassword() {
   return render(
-    <CurrentUserContext.Provider value={member}>
+    <CurrentUserContext.Provider value={{ ...member, organization }}>
       <MemoryRouter initialEntries={['/password']}>
         <App />
       </MemoryRouter>

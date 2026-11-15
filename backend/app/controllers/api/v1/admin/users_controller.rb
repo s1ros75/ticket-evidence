@@ -8,12 +8,12 @@ module Api
         before_action :forbid_in_demo, only: :reset_password
 
         def index
-          render json: User.order(:id)
+          render json: current_organization.users.order(:id)
         end
 
         def create
           temporary_password = generate_password
-          user = User.new(user_params.merge(password: temporary_password))
+          user = current_organization.users.new(user_params.merge(password: temporary_password))
 
           if user.save
             render json: { user: user, temporary_password: temporary_password }, status: :created
@@ -24,7 +24,7 @@ module Api
 
         # パスワードが変わるので、その人のログイン中のセッションはすべて切れる（User の after_update）
         def reset_password
-          user = User.find(params[:id])
+          user = current_organization.users.find(params[:id])
           temporary_password = generate_password
           user.update!(password: temporary_password)
 

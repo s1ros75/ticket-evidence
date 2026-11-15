@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe TicketItem, type: :model do
-  let(:ticket) { Ticket.create!(title: "要件の確認") }
+  let(:ticket) { create_ticket(title: "要件の確認") }
 
   describe "validations" do
     it "kindとbodyがあれば有効" do

@@ -1,6 +1,8 @@
 # チケットをレビュー依頼に進める。不明点が残っていれば進めない
 # ルールを画面ではなくここに置き、どの入口から呼ばれても必ず守られるようにする（docs/design.md）
 class RequestTicketReview
+  include OrganizationGuard
+
   Result = Struct.new(:ticket, :errors, keyword_init: true) do
     def success?
       errors.empty?
@@ -17,6 +19,7 @@ class RequestTicketReview
   end
 
   def call
+    ensure_same_organization!(@user, @ticket)
     errors = []
 
     Ticket.transaction do

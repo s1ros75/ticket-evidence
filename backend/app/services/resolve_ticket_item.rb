@@ -1,6 +1,8 @@
 # 不明点・仮定を「解決する」。根拠の保存と確認済みへの変更を、必ずまとめて行う
 # ルールを画面ではなくここに置き、どの入口から呼ばれても根拠なしでは解決できないようにする（docs/design.md）
 class ResolveTicketItem
+  include OrganizationGuard
+
   Result = Struct.new(:item, :errors, keyword_init: true) do
     def success?
       errors.empty?
@@ -18,6 +20,7 @@ class ResolveTicketItem
   end
 
   def call
+    ensure_same_organization!(@user, @item.ticket)
     errors = []
 
     TicketItem.transaction do

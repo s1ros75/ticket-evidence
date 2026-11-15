@@ -11,6 +11,16 @@ export type User = {
   admin: boolean
 }
 
+export type Organization = {
+  id: number
+  name: string
+}
+
+// ログイン中の本人。どの組織でログインしているかを、ヘッダーに出すために組織も持つ
+export type CurrentUser = User & {
+  organization: Organization
+}
+
 export const ROLE_LABELS: Record<UserRole, string> = {
   member: '担当者',
   reviewer: 'レビュアー',
@@ -19,7 +29,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 const SESSION_URL = '/api/v1/session'
 
 // ログインしていなければnullを返す（401はここでは「未ログイン」という正常な結果として扱う）
-export async function fetchCurrentUser(): Promise<User | null> {
+export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const response = await fetch(SESSION_URL)
   if (response.status === 401) {
     return null
@@ -30,7 +40,7 @@ export async function fetchCurrentUser(): Promise<User | null> {
   return response.json()
 }
 
-export async function login(email: string, password: string): Promise<User> {
+export async function login(email: string, password: string): Promise<CurrentUser> {
   const response = await fetch(SESSION_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe RequestTicketReview do
   let(:user) { create_user }
-  let(:ticket) { Ticket.create!(title: "要件の確認") }
+  let(:ticket) { create_ticket(title: "要件の確認") }
 
   it "不明点がなければ、レビュー中に進める" do
     ticket.items.create!(kind: "confirmed", body: "対象はWeb版のみ")
@@ -55,5 +55,13 @@ RSpec.describe RequestTicketReview do
     described_class.call(user: user, ticket: ticket)
 
     expect(ticket.events).to be_empty
+  end
+
+  # コントローラーは自分の組織のチケットしか渡さないが、別の入口から呼ばれても組織をまたいで操作させない
+  it "別の組織のユーザーでは操作できない" do
+    outsider = create_user(email: "outsider@example.com", organization: Organization.create!(name: "別の組織"))
+
+    expect { described_class.call(user: outsider, ticket: ticket) }.to raise_error(ArgumentError, /組織/)
+    expect(ticket.reload.status).to eq "investigating"
   end
 end

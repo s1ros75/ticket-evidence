@@ -1,6 +1,8 @@
 # レビュー中のチケットを調査中に差し戻す
 # 理由は不明点として残すので、解決するまで再びレビュー依頼に進めない（RequestTicketReview）
 class SendBackTicket
+  include OrganizationGuard
+
   Result = Struct.new(:ticket, :errors, keyword_init: true) do
     def success?
       errors.empty?
@@ -18,6 +20,7 @@ class SendBackTicket
   end
 
   def call
+    ensure_same_organization!(@user, @ticket)
     errors = []
 
     Ticket.transaction do

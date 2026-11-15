@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink } from 'react-router'
 import { setUnauthorizedHandler } from '../api/client'
-import { fetchCurrentUser, logout, ROLE_LABELS, type User } from '../api/session'
+import { fetchCurrentUser, logout, ROLE_LABELS, type CurrentUser } from '../api/session'
 import { CurrentUserContext } from '../auth/CurrentUserContext'
 import { LoginPage } from '../pages/LoginPage'
 
@@ -12,7 +12,7 @@ type Props = {
 // ログインしていなければログイン画面を出す。URLは変えないので、ログイン後はそのまま元の画面に進む
 export function AuthGate({ children }: Props) {
   // undefined: 確認中、null: 未ログイン
-  const [user, setUser] = useState<User | null | undefined>(undefined)
+  const [user, setUser] = useState<CurrentUser | null | undefined>(undefined)
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
@@ -62,6 +62,7 @@ export function AuthGate({ children }: Props) {
             {user.admin && <NavLink to="/admin/users">アカウント管理</NavLink>}
           </nav>
           <div className="account">
+            <span className="organization">{user.organization.name}</span>
             <span className="avatar" aria-hidden="true">
               {user.name.slice(0, 1)}
             </span>

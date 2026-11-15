@@ -16,7 +16,7 @@ function listResponse(tickets: unknown[], nextCursor: string | null = null) {
   return jsonResponse({ tickets, next_cursor: nextCursor })
 }
 
-const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false } as const
+const member = { id: 1, name: '佐藤', email: 'member@example.com', role: 'member', admin: false, organization: { id: 1, name: '株式会社サンプル' } } as const
 
 function renderDashboard() {
   return render(
