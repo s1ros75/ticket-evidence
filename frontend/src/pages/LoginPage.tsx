@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
 import { ValidationError } from '../api/client'
 import { login, type CurrentUser } from '../api/session'
 
@@ -60,6 +61,9 @@ export function LoginPage({ onLoggedIn }: Props) {
             ログイン
           </button>
         </form>
+        <p className="login-switch">
+          <Link to="/signup">新しく組織を登録する</Link>
+        </p>
       </div>
     </main>
   )

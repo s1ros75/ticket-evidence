@@ -27,6 +27,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 }
 
 const SESSION_URL = '/api/v1/session'
+const SIGNUP_URL = '/api/v1/signup'
 
 // ログインしていなければnullを返す（401はここでは「未ログイン」という正常な結果として扱う）
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
@@ -52,6 +53,31 @@ export async function login(email: string, password: string): Promise<CurrentUse
   }
   if (!response.ok) {
     throw new Error(`POST ${SESSION_URL} failed: ${response.status}`)
+  }
+  return response.json()
+}
+
+export type SignupInput = {
+  organization_name: string
+  name: string
+  email: string
+  password: string
+}
+
+// 組織と最初のアカウント（レビュアー兼管理者）を作り、そのままログインした状態になる
+export async function signUp(input: SignupInput): Promise<CurrentUser> {
+  const response = await fetch(SIGNUP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  // 422：入力の誤り、429：回数の制限。どちらも理由を画面に出す
+  if (response.status === 422 || response.status === 429) {
+    const body: { errors: string[] } = await response.json()
+    throw new ValidationError(body.errors)
+  }
+  if (!response.ok) {
+    throw new Error(`POST ${SIGNUP_URL} failed: ${response.status}`)
   }
   return response.json()
 }
