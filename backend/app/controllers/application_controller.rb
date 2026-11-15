@@ -43,6 +43,12 @@ class ApplicationController < ActionController::API
     @current_user_session = user_session
   end
 
+  # 画面のヘッダーに、どの組織でログインしているかを出すため、本人の情報にだけ組織を付ける
+  # （ユーザーのJSONにいつも組織を含めると、「レビュー依頼した人」などにも付いてしまう）
+  def user_with_organization(user)
+    user.as_json.merge(organization: user.organization.as_json)
+  end
+
   def require_login
     render json: { errors: ["ログインしてください"] }, status: :unauthorized unless current_user
   end

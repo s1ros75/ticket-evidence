@@ -34,13 +34,6 @@ module Api
         reset_session
         head :no_content
       end
-
-      private
-
-      # 画面のヘッダーに、どの組織でログインしているかを出すため、本人の情報にだけ組織を付ける
-      def user_with_organization(user)
-        user.as_json.merge(organization: user.organization.as_json)
-      end
     end
   end
 end
