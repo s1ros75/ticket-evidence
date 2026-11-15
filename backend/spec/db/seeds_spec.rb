@@ -11,9 +11,14 @@ RSpec.describe "db/seeds.rb" do
   it "デモのアカウントとチケットを、決めたルールどおりの状態で作る" do
     load_seeds
 
-    expect(User.pluck(:email)).to contain_exactly("member@example.com", "reviewer@example.com", "reviewer2@example.com")
+    sample = Organization.find_by!(name: "株式会社サンプル")
+    demo = Organization.find_by!(name: "合同会社デモ")
+    expect(sample.users.pluck(:email)).to contain_exactly("member@example.com", "reviewer@example.com", "reviewer2@example.com")
+    expect(demo.users.pluck(:email)).to contain_exactly("demo-admin@example.com", "demo-member@example.com")
     expect(User.find_by!(email: "reviewer@example.com")).to be_admin
-    expect(Ticket.group(:status).count).to eq("investigating" => 2, "in_review" => 2, "done" => 1)
+    expect(User.find_by!(email: "demo-admin@example.com")).to be_admin
+    expect(sample.tickets.group(:status).count).to eq("investigating" => 2, "in_review" => 2, "done" => 1)
+    expect(demo.tickets.count).to eq 2
     expect(Evidence.count).to be_positive
     expect(TicketEvent.where(action: "sent_back").count).to eq 1
   end
@@ -21,7 +26,7 @@ RSpec.describe "db/seeds.rb" do
   it "何度実行しても、アカウントもチケットも増えない" do
     load_seeds
 
-    expect { load_seeds }.not_to change { [User.count, Ticket.count, TicketEvent.count] }
+    expect { load_seeds }.not_to change { [Organization.count, User.count, Ticket.count, TicketEvent.count] }
   end
 
   it "SEED_DEMO を付けなければ、開発環境以外では何も作らない" do

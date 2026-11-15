@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe ResolveTicketItem do
   let(:user) { create_user }
-  let(:ticket) { Ticket.create!(title: "要件の確認") }
+  let(:ticket) { create_ticket(title: "要件の確認") }
 
   it "根拠を残して不明点を解決し、確認済みに変える" do
     item = ticket.items.create!(kind: "unknown", body: "締め切りはいつか")
@@ -68,5 +68,14 @@ RSpec.describe ResolveTicketItem do
     described_class.call(user: user, item: item, evidence_params: { memo: "" })
 
     expect(ticket.events).to be_empty
+  end
+
+  # コントローラーは自分の組織のチケットしか渡さないが、別の入口から呼ばれても組織をまたいで操作させない
+  it "別の組織のユーザーでは操作できない" do
+    item = ticket.items.create!(kind: "unknown", body: "締め切りはいつか")
+    outsider = create_user(email: "outsider@example.com", organization: Organization.create!(name: "別の組織"))
+
+    expect { described_class.call(user: outsider, item: item, evidence_params: { memo: "メモ" }) }.to raise_error(ArgumentError, /組織/)
+    expect(item.reload.kind).to eq "unknown"
   end
 end

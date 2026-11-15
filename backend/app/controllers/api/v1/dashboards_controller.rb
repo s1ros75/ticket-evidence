@@ -2,11 +2,12 @@ module Api
   module V1
     class DashboardsController < ApplicationController
       def show
-        counts = Ticket.group(:status).count
+        tickets = current_organization.tickets
+        counts = tickets.group(:status).count
         # 件数が0のステータスも、画面でそのまま0と出せるように必ず含める
         status_counts = Ticket::STATUSES.index_with { |status| counts.fetch(status, 0) }
 
-        investigating_with_unknowns = Ticket.where(status: "investigating")
+        investigating_with_unknowns = tickets.where(status: "investigating")
                                             .where(id: TicketItem.where(kind: "unknown").select(:ticket_id))
                                             .count
 

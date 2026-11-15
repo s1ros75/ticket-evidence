@@ -27,8 +27,8 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
   before { sign_in }
 
   it "チケットの一覧を、新しい順に返す" do
-    Ticket.create!(title: "古いチケット", created_at: 2.days.ago)
-    Ticket.create!(title: "新しいチケット")
+    create_ticket(title: "古いチケット", created_at: 2.days.ago)
+    create_ticket(title: "新しいチケット")
 
     get "/api/v1/tickets"
 
@@ -38,8 +38,8 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
   end
 
   it "statusで絞り込める" do
-    Ticket.create!(title: "調査中のチケット", status: "investigating")
-    Ticket.create!(title: "完了したチケット", status: "done")
+    create_ticket(title: "調査中のチケット", status: "investigating")
+    create_ticket(title: "完了したチケット", status: "done")
 
     get "/api/v1/tickets", params: { status: "done" }
 
@@ -48,7 +48,7 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
   end
 
   it "50件ずつ返し、next_cursorで続きを取れる" do
-    51.times { |i| Ticket.create!(title: "チケット#{i}", created_at: (51 - i).minutes.ago) }
+    51.times { |i| create_ticket(title: "チケット#{i}", created_at: (51 - i).minutes.ago) }
 
     get "/api/v1/tickets"
     first = JSON.parse(response.body)
@@ -68,12 +68,12 @@ RSpec.describe "GET /api/v1/tickets", type: :request do
   end
 
   it "チケットごとに、残っている不明点の数を返す" do
-    with_unknowns = Ticket.create!(title: "不明点があるチケット")
+    with_unknowns = create_ticket(title: "不明点があるチケット")
     with_unknowns.items.create!(kind: "unknown", body: "締め切りはいつか")
     with_unknowns.items.create!(kind: "unknown", body: "支払い方法は何があるか")
     with_unknowns.items.create!(kind: "confirmed", body: "対象はWeb版のみ")
     with_unknowns.items.create!(kind: "assumption", body: "既存の会員情報を使う")
-    Ticket.create!(title: "不明点がないチケット", created_at: 1.day.ago)
+    create_ticket(title: "不明点がないチケット", created_at: 1.day.ago)
 
     get "/api/v1/tickets"
 

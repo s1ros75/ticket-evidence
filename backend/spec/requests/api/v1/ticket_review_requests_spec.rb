@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "POST /api/v1/tickets/:id/request_review", type: :request do
   before { sign_in }
 
-  let(:ticket) { Ticket.create!(title: "要件の確認") }
+  let(:ticket) { create_ticket(title: "要件の確認") }
 
   it "不明点がなければ、レビュー中になったチケットを返す" do
     post "/api/v1/tickets/#{ticket.id}/request_review", as: :json

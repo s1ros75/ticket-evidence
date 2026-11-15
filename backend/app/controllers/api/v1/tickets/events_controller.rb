@@ -3,7 +3,7 @@ module Api
     module Tickets
       class EventsController < ApplicationController
         def index
-          ticket = Ticket.find(params[:ticket_id])
+          ticket = current_organization.tickets.find(params[:ticket_id])
 
           render json: ticket.events.includes(:user).order(created_at: :desc, id: :desc)
         end

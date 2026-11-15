@@ -15,14 +15,17 @@ class TicketListQuery
     new(...).call
   end
 
-  def initialize(status: nil, cursor: nil, per_page: PER_PAGE)
+  # tickets には、ログインしている人の組織のチケット（current_organization.tickets）を渡す。
+  # 全体（Ticket.all）を既定にしないのは、渡し忘れたときに他の組織のチケットまで返さないため
+  def initialize(tickets:, status: nil, cursor: nil, per_page: PER_PAGE)
+    @tickets = tickets
     @status = status
     @cursor = cursor
     @per_page = per_page
   end
 
   def call
-    scope = Ticket.with_unknown_count.order(created_at: :desc, id: :desc)
+    scope = @tickets.with_unknown_count.order(created_at: :desc, id: :desc)
     scope = scope.where(status: @status) if @status.present?
     scope = scope.where("(tickets.created_at, tickets.id) < (?, ?)", *decode(@cursor)) if @cursor.present?
 

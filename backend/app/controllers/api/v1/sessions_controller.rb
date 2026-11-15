@@ -15,7 +15,7 @@ module Api
                  store: Rails.application.config.x.rate_limit_store, with: TOO_MANY_ATTEMPTS
 
       def show
-        render json: current_user
+        render json: user_with_organization(current_user)
       end
 
       def create
@@ -23,7 +23,7 @@ module Api
 
         if user
           start_new_session_for(user)
-          render json: user
+          render json: user_with_organization(user)
         else
           render json: { errors: ["メールアドレスかパスワードが違います"] }, status: :unauthorized
         end
@@ -33,6 +33,13 @@ module Api
         current_user_session.destroy
         reset_session
         head :no_content
+      end
+
+      private
+
+      # 画面のヘッダーに、どの組織でログインしているかを出すため、本人の情報にだけ組織を付ける
+      def user_with_organization(user)
+        user.as_json.merge(organization: user.organization.as_json)
       end
     end
   end
